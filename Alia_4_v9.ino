@@ -6,19 +6,15 @@
  * DATE: December 12, 2024
  *
  * CREATED BY: John Cohn, PhD
- * EMAIL: jcohn@beta.team | johncohnvt@gmail.com
+ * DATE: December 2024
+ * CONTACT: jcohn@beta.team | johncohnvt@gmail.com
  *
- * DEVELOPMENT ASSISTANCE:
- * This code was created with significant assistance from Anthropic Claude Sonnet 4.5
- * AI model. The modular architecture, comprehensive documentation, and tutorial
- * sections were developed collaboratively.
+ * Developed with major assistance from Anthropic Claude.
+ * Please reach out if you have comments, questions, or suggestions!
  *
  * LICENSE: MIT License
  * Copyright (c) 2024 John Cohn
  * See README.md for full license text.
- *
- * This is a well-documented reference implementation for building LED animation
- * controllers with modular patterns. Easy to customize and extend!
  *
  * ========== HARDWARE CONFIGURATION ==========
  * Board: Seeed XIAO RP2040

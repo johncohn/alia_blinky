@@ -2,8 +2,6 @@
 
 LED animation controller for a scale model of the Beta Alia electric vertical takeoff and landing (eVTOL) aircraft. Features realistic flight simulation with dynamic prop and tail animations, plus additional color patterns.
 
-**✨ Easy to customize!** This codebase is designed as a learning resource with comprehensive tutorials for creating your own LED patterns.
-
 **Version:** 1.2.0 (Modular Pattern Architecture)
 **Build:** 16
 **Date:** 2024-12-12
@@ -842,23 +840,19 @@ Serial monitor (115200 baud) shows:
 - Elapsed time
 - Pattern changes
 
+## Hardware Design Files
+
+PCB design files are available in `alia_blinky_kicad.zip`. This archive contains the complete KiCad project for creating a custom circuit board for this LED controller.
+
 ## Credits
 
-**Created by:**
-**John Cohn, PhD**
-December 2024
-📧 jcohn@beta.team | johncohnvt@gmail.com
+**Created by:** John Cohn, PhD
+**Date:** December 2024
+**Contact:** jcohn@beta.team | johncohnvt@gmail.com
 
-Developed for Beta Alia eVTOL scale model LED animation.
+Developed with major assistance from Anthropic Claude.
 
-**Development Assistance:**
-This code was created with significant assistance from **Anthropic Claude Sonnet 4.5** AI model. The modular architecture, comprehensive documentation, and tutorial sections were developed collaboratively to create an accessible learning resource for the maker community.
-
-**Special Thanks:**
-- Beta Technologies for inspiring this project
-- Adafruit for the NeoPixel library
-- Raspberry Pi Foundation for the RP2040 platform
-- The Arduino and maker community
+Please reach out if you have comments, questions, or suggestions!
 
 ## License
 
