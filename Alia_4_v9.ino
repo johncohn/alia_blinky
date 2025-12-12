@@ -1,105 +1,104 @@
 /*
  * Alia_4 - Beta Alia eVTOL LED Animation Controller
  *
- * VERSION: 1.0.1
- * BUILD: 002
- * DATE: 2024-12-06
+ * VERSION: 1.1.0 (Simplified)
+ * BUILD: 15
+ * DATE: 2024-12-12
+ *
+ * This is a simplified, well-commented version intended as a reference for
+ * building LED animation controllers with complex timing patterns.
  *
  * Hardware: Seeed XIAO RP2040
- * LED Controller: WS2812B (41 LEDs)
+ * LED Controller: WS2812B (41 LEDs total)
  *   - 4 Lift Props (9 LEDs each): LEDs 0-35
  *   - Tail Prop (5 LEDs): LEDs 36-40
  *
- * Features:
- *   - FLIGHT: Simulates complete eVTOL flight sequence (lift, transition, cruise, landing)
- *   - SLOW RAINBOW: Smooth rainbow color cycle
- *   - FAST WHITE: Fast white running lights
- *   - RAINBOW PROPS: Rainbow-colored theater chase
- *   - XMAS: Christmas-themed patterns (auto-cycle)
+ * Auto-Cycle Patterns (loops continuously):
+ *   1. FLIGHT: Realistic eVTOL flight simulation with 5 phases (~36 seconds)
+ *      - Uses non-linear acceleration/deceleration for smooth, visible animations
+ *      - Props counter-rotate, tail speed varies by phase
+ *   2. SLOW RAINBOW: Full rainbow color cycle across all LEDs (10 seconds)
+ *   3. FAST WHITE: Sine wave running white lights (10 seconds)
+ *   4. RAINBOW PROPS: Theater chase rainbow effect (10 seconds)
  *
  * Pin Assignments (Seeed XIAO RP2040):
- *   - GPIO 1: Port navigation light
+ *   - GPIO 1: Port navigation light (blinking on colored patterns, constant on white)
  *   - GPIO 2: Nose navigation light
  *   - GPIO 4: WS2812B data line
  *   - GPIO 0: Starboard navigation light
- *   - GPIO 21: Boot button (mode switching)
+ *
+ * Key Implementation Notes:
+ *   - FLIGHT pattern uses completion flag, not timer (prevents interruption mid-sequence)
+ *   - Non-linear motion uses exponential curves (progress²) for realistic acceleration
+ *   - 100ms delay between patterns prevents power supply brownouts
+ *   - Props show 2-LED "blade" pattern when spinning, static when parked
  */
 
 #include <Adafruit_NeoPixel.h>
 #include <Wire.h>
 
-// RP2040 BOOTSEL button support
-#ifdef ARDUINO_ARCH_RP2040
-#include "hardware/gpio.h"
-#include "hardware/sync.h"
-#include "hardware/structs/ioqspi.h"
-#include "hardware/structs/sio.h"
-#endif
-
 // ===== VERSION INFO =====
-#define VERSION "1.0.3"
-#define BUILD_NUMBER 14
+#define VERSION "1.1.0"
+#define BUILD_NUMBER 15
 
 // ===== LED CONFIGURATION =====
-#define brightness 50  // Restored to original brightness
-#define fastProp 2
-#define slowProp 100
-#define normProp 50
-#define propSkip 2
+// These brightness values work well with USB-C power (2A+)
+// For USB-A power, reduce brightness to 25 to prevent brownouts
+#define brightness 50  // LED brightness (0-255)
+#define fastProp 2     // Fast prop speed constant (legacy, not actively used)
+#define slowProp 100   // Slow prop speed constant (legacy, not actively used)
+#define normProp 50    // Normal prop speed constant (legacy, not actively used)
+#define propSkip 2     // Prop skip constant for legacy prop() function
 
-// Seeed XIAO RP2040 Pin Definitions (Physical pin -> GPIO mapping)
-// Testing different pin combinations
-#define portPin 1    // Try GPIO 28 (D8/A2)
-#define nosePin 2    // Try GPIO 27 (D9/A3)
-#define ledPin 4      // Physical pin 10 - NeoPixel data pin (WORKING)
-#define starPin  0  // Try GPIO 29 (D7/A1)
-// Button configuration - BOOTSEL causes crashes, disabled for now
-// #define USE_BOOTSEL_BUTTON  // Disabled - causes system crash
-// Auto-cycle mode works great without button
-#define buttonPin 3  // Reserved for future external button
-#define waitTime 50
+// Seeed XIAO RP2040 Pin Definitions
+#define portPin 1      // GPIO 1 - Port navigation light (red)
+#define nosePin 2      // GPIO 2 - Nose navigation light (white)
+#define ledPin 4       // GPIO 4 - WS2812B data pin (Physical pin 10)
+#define starPin  0     // GPIO 0 - Starboard navigation light (green)
+#define waitTime 50    // Default wait time for pattern animations (ms)
 
-int blinkTime = 1500;
-bool blinkState = true;
-int mode = 0;
-int maxMode = 7;  // Increased to accommodate new Xmas mode
-bool gotBreak = false;
+// ===== STATE VARIABLES =====
+// Navigation light blinking
+int blinkTime = 1500;      // Blink interval for colored patterns (ms)
+bool blinkState = true;    // Current blink state
 
-// Auto-cycle mode variables
-unsigned long lastModeChange = 0;
-int autoCycleSubMode = 0;
-bool patternComplete = false;  // Flag to signal pattern completion
-const int AUTO_CYCLE_DURATION = 10000; // Default duration for simple patterns
+// Mode control (simplified to just auto-cycle)
+int mode = 0;              // Current mode (always 0 for auto-cycle)
+int maxMode = 1;           // Only one mode available
+bool gotBreak = false;     // Flag to signal pattern interruption
 
-// Xmas pattern mode variables
-unsigned long lastXmasModeChange = 0;
-int xmasSubMode = 0;
-const int XMAS_CYCLE_DURATION = 10000; // 10 seconds per Xmas pattern
-uint8_t gHue = 0; // rotating "base color" used by patterns
+// Auto-cycle pattern management
+unsigned long lastModeChange = 0;      // Timestamp of last pattern change
+int autoCycleSubMode = 0;              // Current pattern in auto-cycle (0-3)
+bool patternComplete = false;          // Completion flag for FLIGHT pattern
+const int AUTO_CYCLE_DURATION = 10000; // Duration for simple patterns (10 seconds)
 
-// Button debounce variables
-bool lastButtonState = HIGH;
-unsigned long lastDebounceTime = 0;
-const unsigned long debounceDelay = 250;  // Increased for better debouncing
-
+// ===== COLOR DEFINITIONS =====
+// Pre-calculated RGB colors for different animation states
 uint32_t normColor, fastColor, slowColor;
 
+// Legacy prop color variables (used by old prop() function)
 uint32_t fl_color, fr_color, bl_color, br_color, t_color;
 
-unsigned long int now = 0;
-unsigned long int p_now = 0;
+// ===== TIMING VARIABLES =====
+unsigned long int now = 0;   // Current time for navigation light blinking
+unsigned long int p_now = 0; // Current time for legacy prop() function
 
-static uint8_t fl_pos = 0;
-static uint8_t fr_pos = 0;
-static uint8_t bl_pos = 0;
-static uint8_t br_pos = 0;
-static uint8_t t_pos = 0;
-int fl_speed = normProp;
-int fr_speed = normProp;
-int bl_speed = normProp;
-int br_speed = normProp;
-int t_speed = normProp;
+// ===== LEGACY PROP FUNCTION VARIABLES =====
+// These are used by the prop() function which is not part of the auto-cycle
+// but kept for Mode 6 compatibility
+static uint8_t fl_pos = 0;           // Front left prop position
+static uint8_t fr_pos = 0;           // Front right prop position
+static uint8_t bl_pos = 0;           // Back left prop position
+static uint8_t br_pos = 0;           // Back right prop position
+static uint8_t t_pos = 0;            // Tail prop position
+int fl_speed = normProp;             // Front left speed
+int fr_speed = normProp;             // Front right speed
+int bl_speed = normProp;             // Back left speed
+int br_speed = normProp;             // Back right speed
+int t_speed = normProp;              // Tail speed
 
+// Last update timestamps for legacy prop() function
 static unsigned long fl_lastUpdate = 0;
 static unsigned long fr_lastUpdate = 0;
 static unsigned long bl_lastUpdate = 0;
@@ -111,116 +110,50 @@ static uint16_t bl_currentLed = 0;
 static uint16_t br_currentLed = 0;
 static uint16_t t_currentLed = 0;
 
-
+// ===== LED STRIP CONFIGURATION =====
 #define LED_COUNT 41
 
-// LED segment definitions
-#define PROP1_START 0
+// LED segment definitions - Maps physical LED positions to logical props
+// Props are arranged in a quad configuration:
+//   Prop 1 (Front Left)   Prop 2 (Front Right)
+//   Prop 3 (Rear Left)    Prop 4 (Rear Right)
+//              Tail (Rear Center)
+#define PROP1_START 0      // Prop 1: LEDs 0-8 (9 LEDs) - Rotates CCW
 #define PROP1_END 8
-#define PROP2_START 9
+#define PROP2_START 9      // Prop 2: LEDs 9-17 (9 LEDs) - Rotates CW
 #define PROP2_END 17
-#define PROP3_START 18
+#define PROP3_START 18     // Prop 3: LEDs 18-26 (9 LEDs) - Rotates CW
 #define PROP3_END 26
-#define PROP4_START 27
+#define PROP4_START 27     // Prop 4: LEDs 27-35 (9 LEDs) - Rotates CCW
 #define PROP4_END 35
-#define TAIL_START 36
+#define TAIL_START 36      // Tail: LEDs 36-40 (5 LEDs) - Single LED sequencing
 #define TAIL_END 40
 
-// Declare our NeoPixel strip object:
+// Initialize NeoPixel strip object
 Adafruit_NeoPixel strip(LED_COUNT, ledPin, NEO_GRB + NEO_KHZ800);
 
-// Helper function to read BOOTSEL button
-bool readButton() {
-#ifdef USE_BOOTSEL_BUTTON
-  #ifdef ARDUINO_ARCH_RP2040
-    // Read BOOTSEL button using Pico SDK hardware registers
-    const uint CS_PIN_INDEX = 1;
-
-    // Disable interrupts while we check
-    uint32_t flags = save_and_disable_interrupts();
-
-    // Set CS pin to be a GPIO input (temporarily)
-    hw_write_masked(&ioqspi_hw->io[CS_PIN_INDEX].ctrl,
-                    GPIO_OVERRIDE_LOW << IO_QSPI_GPIO_QSPI_SS_CTRL_OEOVER_LSB,
-                    IO_QSPI_GPIO_QSPI_SS_CTRL_OEOVER_BITS);
-
-    // Read the button state (active low)
-    bool button_pressed = !(sio_hw->gpio_hi_in & (1u << CS_PIN_INDEX));
-
-    // Restore CS pin to normal operation
-    hw_write_masked(&ioqspi_hw->io[CS_PIN_INDEX].ctrl,
-                    GPIO_OVERRIDE_NORMAL << IO_QSPI_GPIO_QSPI_SS_CTRL_OEOVER_LSB,
-                    IO_QSPI_GPIO_QSPI_SS_CTRL_OEOVER_BITS);
-
-    restore_interrupts(flags);
-
-    return button_pressed ? LOW : HIGH;  // Return LOW when pressed
-  #else
-    return HIGH;  // Not on RP2040
-  #endif
-#else
-  return HIGH;  // No button configured
-#endif
-}
-
-void checkButton() {
-  bool buttonReading = readButton();
-
-  // Debug button state
-  static unsigned long lastButtonDebug = 0;
-  if (millis() - lastButtonDebug > 5000) {
-    lastButtonDebug = millis();
-    Serial.print("Button: reading=");
-    Serial.print(buttonReading);
-    Serial.print(" lastState=");
-    Serial.println(lastButtonState);
-  }
-
-  // Button pressed (LOW) and enough time has passed since last press
-  if (buttonReading == LOW && lastButtonState == HIGH && (millis() - lastDebounceTime) > debounceDelay) {
-    lastDebounceTime = millis();
-
-    mode++;
-    if (mode >= maxMode) {
-      mode = 0;
-    }
-    Serial.print("===== MODE CHANGED TO: ");
-    Serial.print(mode);
-    Serial.println(" =====");
-
-    // Reset auto-cycle variables when entering mode 0
-    if (mode == 0) {
-      autoCycleSubMode = 0;
-      lastModeChange = millis();
-    }
-
-    // Reset Xmas mode variables when entering mode 1
-    if (mode == 1) {
-      xmasSubMode = 0;
-      lastXmasModeChange = millis();
-    }
-
-    gotBreak = true;
-    strip.clear();
-  }
-
-  lastButtonState = buttonReading;
-}
+// ===== SETUP FUNCTION =====
+// Runs once at startup to initialize hardware and serial communication
 
 void setup() {
+  // Initialize navigation light pins as outputs
   pinMode(nosePin, OUTPUT);
   pinMode(portPin, OUTPUT);
   pinMode(starPin, OUTPUT);
   pinMode(ledPin, OUTPUT);
-  // BOOTSEL button doesn't need pinMode setup
-  Wire.begin();
-  Wire.setClock(400000);  //400khz clock
 
+  // Initialize I2C (not actively used, but kept for compatibility)
+  Wire.begin();
+  Wire.setClock(400000);  // 400kHz I2C clock
+
+  // Initialize serial communication for debug output
   Serial.begin(115200);
+
+  // Initialize LED strip
   strip.setBrightness(brightness);
   strip.begin();
 
-  // Print version info
+  // Print startup banner with version info
   Serial.println("========================================");
   Serial.println("  Alia_4 - Beta Alia eVTOL LED Controller");
   Serial.print("  Version: ");
@@ -230,27 +163,43 @@ void setup() {
   Serial.println("  Hardware: Seeed XIAO RP2040");
   Serial.println("========================================");
 
-  // Initialize colors
+  // Pre-calculate RGB colors for different animation states
+  // normColor: White color for standard prop/tail display
   normColor = strip.Color(brightness, brightness, brightness);
+  // fastColor: Bluish-white for fast animations (legacy, not actively used)
   fastColor = strip.Color(brightness * 2, brightness * 2, (brightness * 2) + 40);
+  // slowColor: Reddish color for slow animations (legacy, not actively used)
   slowColor = strip.Color((brightness / 4) + 20, brightness / 4, brightness / 4);
 
+  // Initialize timing variables
   now = millis();
   p_now = now;
-  lastModeChange = millis();  // Initialize auto-cycle timer
-  lastDebounceTime = millis(); // Initialize debounce timer
+  lastModeChange = millis();  // Start auto-cycle timer
+
+  // Turn on nose navigation light
   digitalWrite(nosePin, HIGH);
 
   Serial.println("Initialization complete");
   Serial.println("Starting in Auto-Cycle Mode");
   delay(1000);
 }
+
+// ===== NAVIGATION LIGHT CONTROL =====
+// Controls the three navigation lights (nose, port, starBoard)
+// White patterns: constant on
+// Colored patterns: blinking
+
+// Overload: Default to blinking mode
 void lights() {
-  lights(true); // Default to blinking
+  lights(true);
 }
 
+// Controls navigation lights based on pattern type
+// Parameters:
+//   shouldBlink: true for blinking (colored patterns), false for constant (white patterns)
 void lights(bool shouldBlink) {
   if (shouldBlink) {
+    // Blink navigation lights every blinkTime milliseconds
     if ((millis() - now) > blinkTime) {
       now = millis();
       blinkState = !blinkState;
@@ -259,12 +208,14 @@ void lights(bool shouldBlink) {
       digitalWrite(starPin, blinkState);
     }
   } else {
-    // Constant on for white patterns
+    // Keep navigation lights constantly on for white patterns
     digitalWrite(nosePin, HIGH);
     digitalWrite(portPin, HIGH);
     digitalWrite(starPin, HIGH);
   }
 }
+
+// ===== HELPER FUNCTIONS FOR LED PATTERNS =====
 // Some functions of our own for creating animated effects -----------------
 
 // Fill strip pixels one after another with a color. Strip is NOT cleared
@@ -638,114 +589,37 @@ void fadeToBlack(int ledNo, byte fadeValue) {
 #endif
 }
 
-// ===== XMAS PATTERN FUNCTIONS =====
-// Convert Wheel position to RGB color (0-255 input)
-uint32_t Wheel(byte WheelPos) {
-  WheelPos = 255 - WheelPos;
-  if (WheelPos < 85) {
-    return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
-  }
-  if (WheelPos < 170) {
-    WheelPos -= 85;
-    return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
-  }
-  WheelPos -= 170;
-  return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-}
-
-// Confetti pattern - random colored speckles
-void confetti() {
-  // Fade all pixels
-  for (int i = 0; i < LED_COUNT; i++) {
-    fadeToBlack(i, 10);
-  }
-  // Add a random pixel
-  int pos = random(LED_COUNT);
-  uint32_t color = Wheel(gHue + random(64));
-  strip.setPixelColor(pos, color);
-  strip.show();
-  lights();
-  if (gotBreak) return;
-  delay(20);
-}
-
-// Juggle pattern - colored dots weaving
-void juggle() {
-  // Fade all pixels
-  for (int i = 0; i < LED_COUNT; i++) {
-    fadeToBlack(i, 20);
-  }
-
-  // Add 8 dots with different colors
-  byte dothue = 0;
-  for (int i = 0; i < 8; i++) {
-    // Simplified beatsin - oscillate position
-    int pos = ((millis() / (100 - i * 10)) % LED_COUNT);
-    uint32_t color = Wheel(dothue);
-    strip.setPixelColor(pos, color);
-    dothue += 32;
-  }
-  strip.show();
-  lights();
-  if (gotBreak) return;
-  delay(20);
-}
-
-// BPM pattern - pulsing stripes
-void bpm() {
-  uint8_t BeatsPerMinute = 62;
-  uint8_t beat = beatsin8(BeatsPerMinute, 64, 255);
-
-  for (int i = 0; i < LED_COUNT; i++) {
-    uint8_t hue = gHue + (i * 2);
-    uint8_t beatBrightness = beat - gHue + (i * 10);
-    strip.setPixelColor(i, Wheel(hue));
-  }
-  strip.show();
-  lights();
-  if (gotBreak) return;
-  delay(20);
-}
-
-// Rainbow with glitter
-void rainbowWithGlitter() {
-  // Fill with rainbow
-  for (int i = 0; i < LED_COUNT; i++) {
-    strip.setPixelColor(i, Wheel((i * 256 / LED_COUNT + gHue) & 255));
-  }
-  // Add glitter
-  if (random(100) < 80) {
-    strip.setPixelColor(random(LED_COUNT), strip.Color(255, 255, 255));
-  }
-  strip.show();
-  lights();
-  if (gotBreak) return;
-  delay(20);
-}
-
-// Helper function for BPM pattern
-uint8_t beatsin8(uint8_t bpm, uint8_t lowest, uint8_t highest) {
-  uint16_t beat = (millis() * bpm) / 60000;
-  uint8_t beatsin = (sin16(beat * 65536 / 256) + 32768) / 256;
-  return map(beatsin, 0, 255, lowest, highest);
-}
-
-// Helper function for sine calculation
-int16_t sin16(uint16_t theta) {
-  static const int16_t base[] = {0, 6393, 12539, 18204, 23170, 27245, 30273, 32137};
-  uint16_t offset = (theta & 0x3FFF) >> 3;
-  if (theta & 0x4000) offset = 2047 - offset;
-  uint8_t section = offset / 256;
-  uint8_t b = offset & 0xFF;
-  int16_t result = base[section];
-  result += ((base[section + 1] - base[section]) * b) >> 8;
-  if (theta & 0x8000) result = -result;
-  return result;
-}
-
-// FLIGHT - Simulates Beta Alia eVTOL flight sequence
-// Returns true when the complete sequence is finished
+// ===== FLIGHT PATTERN FUNCTION =====
+//
+// FLIGHT - Simulates Beta Alia eVTOL complete flight sequence
+//
+// This function implements a realistic flight pattern with 5 distinct phases:
+//   Phase 0: LIFT           - Vertical takeoff (5s) - Props accelerate, tail very slow
+//   Phase 1: TRANSITION_IN  - Transition to forward flight (8s) - Hold max, then decel
+//   Phase 2: CONVENTIONAL   - Cruise flight (5s) - Props parked, tail fast
+//   Phase 3: TRANSITION_OUT - Transition back (13s) - Props accel, hold, decel for landing
+//   Phase 4: GROUND_PAUSE   - Resting on ground (5s) - Props parked, tail very slow
+//
+// Total cycle time: ~36 seconds
+//
+// Key Design Patterns:
+//   1. Finite State Machine - Uses phase variable to track flight stage
+//   2. Non-linear Motion - Exponential curves (progress²) for realistic acceleration
+//   3. Completion Flag - Returns true when done instead of using timer (prevents interruption)
+//   4. Static Variables - Maintains state between calls (runs once per loop() iteration)
+//
+// Prop Rotation:
+//   - Props 1 & 4: Counter-clockwise (CCW)
+//   - Props 2 & 3: Clockwise (CW)
+//   - 2-LED "blade" pattern when spinning
+//   - Static "parked" position when stopped
+//
+// Returns:
+//   true  - Sequence complete, ready to advance to next pattern
+//   false - Still running or interrupted
+//
 bool flightPattern() {
+  // Static variables maintain state between function calls
   static uint8_t prop1_angle = 0, prop2_angle = 0, prop3_angle = 0, prop4_angle = 0;
   static uint8_t tail_pos = 0;
   static unsigned long lastPropUpdate = 0;
@@ -753,16 +627,20 @@ bool flightPattern() {
   static int propDelay = 500;      // Start very slow for visible acceleration
   static int tailDelay = 200;      // Tail slow constant speed initially
   static unsigned long phaseStart = 0;
-  static int phase = 0;  // 0=LIFT, 1=TRANSITION_IN, 2=CONVENTIONAL, 3=TRANSITION_OUT/LANDING, 4=GROUND_PAUSE
+  static int phase = 0;  // Current phase: 0=LIFT, 1=TRANSITION_IN, 2=CONVENTIONAL, 3=TRANSITION_OUT/LANDING, 4=GROUND_PAUSE
 
-  const int minPropDelay = 10;      // Fastest prop speed - VERY FAST
-  const int maxPropDelay = 500;     // Slowest prop speed (starting speed)
+  // ===== TIMING CONSTANTS =====
+  // Speed parameters (in milliseconds between updates - lower = faster)
+  const int minPropDelay = 10;      // Fastest prop speed - VERY FAST (10ms between updates)
+  const int maxPropDelay = 500;     // Slowest prop speed (starting/parked speed)
   const int minTailDelay = 50;      // Fastest tail speed
   const int maxTailDelay = 200;     // Slowest tail speed
-  const int verySlowTailDelay = 400; // Very slow tail for LIFT and GROUND_PAUSE
+  const int verySlowTailDelay = 400; // Very slow tail for LIFT and GROUND_PAUSE phases
+
+  // Phase durations (in milliseconds)
   const int liftTime = 5000;        // LIFT: 5 seconds to accelerate props
   const int transitionInHoldTime = 3000;  // Hold at max speed before deceleration
-  const int transitionInTime = 8000;   // TRANSITION_IN: 3s hold + 5s decelerate = 8s
+  const int transitionInTime = 8000;   // TRANSITION_IN: 3s hold + 5s decelerate = 8s total
   const int conventionalTime = 5000;   // CONVENTIONAL: 5 seconds cruise flight
   const int transitionOutSpinUpTime = 5000;  // 5 seconds to spin up
   const int transitionOutHoldTime = 3000;    // Hold at max speed
@@ -770,12 +648,14 @@ bool flightPattern() {
   const int transitionOutLandingTime = 13000; // 5s + 3s + 5s = 13s total
   const int groundPauseTime = 5000;    // Pause on ground with props parked before completing
 
-  // Helper function: Non-linear prop speed based on progress (0.0 to 1.0)
-  // Uses exponential curve: fast through low speeds, more time at high speeds
+  // ===== NON-LINEAR MOTION CALCULATOR =====
+  // Lambda function to calculate prop delay based on progress (0.0 to 1.0)
+  // Uses exponential curve (progress²) so props:
+  //   - Accelerate quickly through low speeds (visible movement immediately)
+  //   - Spend more time at high speeds (smooth, gradual approach to max)
+  // This creates a more natural, organic motion pattern
   auto calculatePropDelay = [](float progress) -> int {
-    // Square the progress for exponential curve
-    float curved = progress * progress;
-    // Interpolate between max (slow) and min (fast)
+    float curved = progress * progress;  // Exponential curve (square)
     return maxPropDelay - (curved * (maxPropDelay - minPropDelay));
   };
 
@@ -1089,153 +969,92 @@ bool flightPattern() {
   return false;  // Still running
 }
 
+// ===== MAIN LOOP =====
+// Runs continuously - manages auto-cycle pattern rotation
+//
+// Auto-Cycle Operation:
+//   1. FLIGHT pattern runs until completion (returns true)
+//   2. Other patterns run for AUTO_CYCLE_DURATION (10 seconds)
+//   3. 100ms delay between patterns prevents power brownouts
+//   4. Cycles through 4 patterns: FLIGHT, SLOW RAINBOW, FAST WHITE, RAINBOW PROPS
+//
 void loop() {
-  // Check button state
-  checkButton();
+  // ===== AUTO-CYCLE MODE =====
+  // Automatically cycles through 4 different patterns
+  // Uses completion flag for FLIGHT, timer for others
 
-  // Update gHue for color cycling effects
-  static unsigned long lastHueUpdate = 0;
-  if (millis() - lastHueUpdate > 20) {
-    gHue++;
-    lastHueUpdate = millis();
+  bool shouldAdvance = false;  // Flag to signal pattern transition
+
+  // Debug output every 5 seconds (helpful for monitoring)
+  static unsigned long lastStateDebug = 0;
+  if (millis() - lastStateDebug > 5000) {
+    lastStateDebug = millis();
+    Serial.print("AutoCycle: subMode=");
+    Serial.print(autoCycleSubMode);
+    Serial.print(" patternComplete=");
+    Serial.print(patternComplete);
+    Serial.print(" timeSinceChange=");
+    Serial.print((millis() - lastModeChange) / 1000);
+    Serial.println("s");
   }
 
-  byte colors[3][3] = { { 0xff, 0, 0 },
-                        { 0xff, 0xff, 0xff },
-                        { 0, 0, 0xff } };
+  // Check if it's time to advance to next pattern
+  if (autoCycleSubMode == 0) {
+    // FLIGHT pattern - wait for completion signal ONLY (ignores timer)
+    // This prevents interruption mid-sequence
+    if (patternComplete) {
+      shouldAdvance = true;
+      patternComplete = false;
+      Serial.println("FLIGHT pattern signaled completion!");
+    }
+  } else {
+    // Other patterns - use timer (10 seconds each)
+    if (millis() - lastModeChange >= AUTO_CYCLE_DURATION) {
+      shouldAdvance = true;
+      Serial.println("Timer expired for pattern");
+    }
+  }
 
-  switch (mode) {
-    case 0: {
-      // Auto-cycle mode - cycles through all patterns
-      // Use pattern completion flag for FLIGHT, timer for others
-      bool shouldAdvance = false;
-
-      // Debug current state
-      static unsigned long lastStateDebug = 0;
-      if (millis() - lastStateDebug > 5000) {
-        lastStateDebug = millis();
-        Serial.print("AutoCycle: subMode=");
-        Serial.print(autoCycleSubMode);
-        Serial.print(" patternComplete=");
-        Serial.print(patternComplete);
-        Serial.print(" timeSinceChange=");
-        Serial.print((millis() - lastModeChange) / 1000);
-        Serial.println("s");
-      }
-
-      if (autoCycleSubMode == 0) {
-        // FLIGHT pattern - wait for completion signal ONLY
-        if (patternComplete) {
-          shouldAdvance = true;
-          patternComplete = false;
-          Serial.println("FLIGHT pattern signaled completion!");
-        }
-      } else {
-        // Other patterns - use timer
-        if (millis() - lastModeChange >= AUTO_CYCLE_DURATION) {
-          shouldAdvance = true;
-          Serial.println("Timer expired for other pattern");
-        }
-      }
-
-      if (shouldAdvance) {
-        lastModeChange = millis();
-        autoCycleSubMode++;
-        if (autoCycleSubMode >= 4) {  // 4 patterns: FLIGHT, SLOW RAINBOW, FAST WHITE, RAINBOW PROPS
-          autoCycleSubMode = 0;
-        }
-        strip.clear();
-        strip.show();  // Force all LEDs off
-        delay(100);    // Wait 100ms for power to stabilize before starting new pattern
-        const char* subModeNames[] = {"FLIGHT", "SLOW RAINBOW", "FAST WHITE", "RAINBOW PROPS"};
-        Serial.print("===== Auto-cycle switching to: ");
-        Serial.print(subModeNames[autoCycleSubMode]);
-        Serial.println(" =====");
-      }
-
-      // Run the current pattern
-      switch (autoCycleSubMode) {
-        case 0:
-          patternComplete = flightPattern();  // FLIGHT - returns true when complete
-          break;
-        case 1:
-          rainbow(waitTime / 5);  // SLOW RAINBOW - restored
-          break;
-        case 2:
-          RunningLights(0xff, 0xff, 0xff, 50);  // FAST WHITE
-          break;
-        case 3:
-          theaterChaseRainbow(waitTime);  // RAINBOW PROPS
-          break;
-      }
-      break;
+  // Advance to next pattern if needed
+  if (shouldAdvance) {
+    lastModeChange = millis();
+    autoCycleSubMode++;
+    if (autoCycleSubMode >= 4) {  // 4 patterns total (0-3)
+      autoCycleSubMode = 0;
     }
 
-    case 1:
-      // Xmas Auto-cycle mode - cycles through Christmas patterns
-      // Check if it's time to advance to next pattern
-      if (millis() - lastXmasModeChange >= XMAS_CYCLE_DURATION) {
-        lastXmasModeChange = millis();
-        xmasSubMode++;
-        if (xmasSubMode >= 5) {
-          xmasSubMode = 0;
-        }
-        strip.clear();
-        Serial.print("Xmas auto-cycle switching to sub-mode: ");
-        Serial.println(xmasSubMode);
-      }
+    // Clear LEDs and wait for power to stabilize (prevents brownouts)
+    strip.clear();
+    strip.show();
+    delay(100);  // 100ms stabilization delay
 
-      // Run the current Xmas pattern
-      switch (xmasSubMode) {
-        case 0:
-          rainbowWithGlitter();
-          break;
-        case 1:
-          confetti();
-          break;
-        case 2:
-          juggle();
-          break;
-        case 3:
-          bpm();
-          break;
-        case 4:
-          theaterChaseRainbow(waitTime);
-          break;
-      }
+    // Debug output
+    const char* subModeNames[] = {"FLIGHT", "SLOW RAINBOW", "FAST WHITE", "RAINBOW PROPS"};
+    Serial.print("===== Auto-cycle switching to: ");
+    Serial.print(subModeNames[autoCycleSubMode]);
+    Serial.println(" =====");
+  }
+
+  // Run the current pattern
+  switch (autoCycleSubMode) {
+    case 0:
+      // FLIGHT - Complete eVTOL flight simulation (~36 seconds)
+      patternComplete = flightPattern();
+      break;
+
+    case 1:
+      // SLOW RAINBOW - Full rainbow cycle across all 41 LEDs
+      rainbow(waitTime / 5);
       break;
 
     case 2:
-      theaterChase(strip.Color(brightness, brightness, brightness), waitTime);  // White, half brightness
-      break;
-
-    case 3:
-      rainbow(waitTime / 5);  // Flowing rainbow cycle along the whole strip
-      break;
-    case 4:
-      theaterChaseRainbow(waitTime);  // Rainbow-enhanced theaterChase variant
-      break;
-    case 5:
+      // FAST WHITE - Running white lights with sine wave
       RunningLights(0xff, 0xff, 0xff, 50);
       break;
 
-    case 6:
-      // Static prop mode - no IMU control
-      fl_speed = normProp;
-      fr_speed = normProp;
-      bl_speed = normProp;
-      br_speed = normProp;
-      t_speed = normProp;
-      fl_color = normColor;
-      bl_color = normColor;
-      fr_color = normColor;
-      br_color = normColor;
-      t_color = normColor;
-
-      prop(fl_color, fr_color, bl_color, br_color, t_color, fl_speed, fr_speed, bl_speed, br_speed, t_speed);
-      break;
-    default:
-      // statements
+    case 3:
+      // RAINBOW PROPS - Theater chase rainbow effect
+      theaterChaseRainbow(waitTime);
       break;
   }
 }
