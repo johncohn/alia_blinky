@@ -134,6 +134,213 @@ Modify pattern duration in `AUTO_CYCLE_DURATION`:
 const int AUTO_CYCLE_DURATION = 10000; // milliseconds
 ```
 
+## Creating Custom Patterns
+
+This codebase is designed to make it easy to add your own LED patterns. Follow these steps:
+
+### Quick Start Guide
+
+**Step 1: Write your pattern function**
+
+Add your pattern function to the "CUSTOM PATTERNS SECTION" (~line 1002 in the .ino file):
+
+```cpp
+// Simple pattern example - lights all LEDs red
+void myRedPattern() {
+  for (int i = 0; i < LED_COUNT; i++) {
+    strip.setPixelColor(i, strip.Color(brightness, 0, 0));
+  }
+  strip.show();
+  lights();  // Updates navigation lights (blinking)
+}
+```
+
+**Step 2: Update NUM_PATTERNS**
+
+Near the top of the file (~line 72), increment the pattern count:
+
+```cpp
+#define NUM_PATTERNS 5  // Changed from 4 to 5
+```
+
+**Step 3: Add to auto-cycle**
+
+In the `loop()` function (~line 1196), add a new case:
+
+```cpp
+case 4:
+  myRedPattern();
+  break;
+```
+
+**Step 4: Add pattern name**
+
+In the `subModeNames` array (~line 1182), add your pattern name:
+
+```cpp
+const char* subModeNames[] = {
+  "FLIGHT",
+  "SLOW RAINBOW",
+  "FAST WHITE",
+  "RAINBOW PROPS",
+  "MY RED PATTERN"  // Add your name here
+};
+```
+
+Done! Your pattern will now appear in the auto-cycle rotation.
+
+### Pattern Function Conventions
+
+#### Simple Patterns (Timer-based)
+
+Use `void` return type for patterns that run for a fixed duration:
+
+```cpp
+void myPattern() {
+  // Your animation code
+  strip.show();
+  lights();       // Blinking nav lights (colored patterns)
+  // OR
+  lights(false);  // Constant nav lights (white patterns)
+}
+```
+
+The auto-cycle timer (`AUTO_CYCLE_DURATION`) will automatically advance after 10 seconds.
+
+#### Complex Patterns (Completion-based)
+
+Use `bool` return type for patterns that need to complete their own sequence:
+
+```cpp
+bool myComplexPattern() {
+  static int phase = 0;
+  static unsigned long phaseStart = 0;
+
+  // Initialize on first call
+  if (phaseStart == 0) {
+    phaseStart = millis();
+  }
+
+  // Phase logic
+  if (phase == 0) {
+    // Do animation for 5 seconds
+    if (millis() - phaseStart > 5000) {
+      phase = 1;
+      phaseStart = millis();
+    }
+  } else if (phase == 1) {
+    // Do different animation for 3 seconds
+    if (millis() - phaseStart > 3000) {
+      phase = 0;
+      phaseStart = 0;
+      return true;  // Signal completion
+    }
+  }
+
+  strip.show();
+  lights();
+
+  // Handle early exit
+  if (gotBreak) {
+    phase = 0;
+    phaseStart = 0;
+    gotBreak = false;
+    return false;
+  }
+
+  return false;  // Still running
+}
+```
+
+For completion-based patterns, call them like this in the switch statement:
+
+```cpp
+case 4:
+  patternComplete = myComplexPattern();
+  break;
+```
+
+### Example Patterns
+
+The code includes two commented example patterns:
+
+1. **Red Wipe Pattern** - Sequentially lights LEDs red
+2. **Breathing Pattern** - Blue LEDs fade in and out
+
+Uncomment these in the CUSTOM PATTERNS section to try them out!
+
+### Best Practices
+
+1. **Use static variables** for state that persists between calls
+2. **Non-blocking code** - Avoid long `delay()` calls, use `millis()` instead
+3. **Check gotBreak** - Allows early pattern exit if needed
+4. **Power management** - Be mindful of total LED count and brightness
+5. **Navigation lights** - Use `lights()` for colored patterns, `lights(false)` for white
+6. **Clear LEDs** - Use `strip.clear()` at the start if needed
+
+### Pattern Ideas
+
+- **Chase patterns** - One or more LEDs moving around
+- **Color wipes** - Fill from one end to the other
+- **Breathing effects** - Fade brightness up and down
+- **Twinkle/sparkle** - Random LEDs blinking
+- **Color cycles** - Smooth transitions through color spectrum
+- **Prop-specific** - Custom animations for individual props (see FLIGHT pattern)
+- **Synchronized** - Props moving in coordinated patterns
+
+### Hardware-Specific Patterns
+
+This controller has 4 props + 1 tail. You can create patterns that treat each prop separately:
+
+```cpp
+void propSpinPattern() {
+  static int angle = 0;
+
+  // Clear all LEDs
+  strip.clear();
+
+  // Light one LED on each prop
+  strip.setPixelColor(PROP1_START + (angle % 9), normColor);
+  strip.setPixelColor(PROP2_START + (angle % 9), normColor);
+  strip.setPixelColor(PROP3_START + (angle % 9), normColor);
+  strip.setPixelColor(PROP4_START + (angle % 9), normColor);
+
+  strip.show();
+  lights(false);
+
+  angle++;
+  delay(50);
+}
+```
+
+Prop/tail LED ranges:
+- `PROP1_START` to `PROP1_END` (LEDs 0-8)
+- `PROP2_START` to `PROP2_END` (LEDs 9-17)
+- `PROP3_START` to `PROP3_END` (LEDs 18-26)
+- `PROP4_START` to `PROP4_END` (LEDs 27-35)
+- `TAIL_START` to `TAIL_END` (LEDs 36-40)
+
+### Debugging Your Pattern
+
+Monitor the serial output (115200 baud) to see:
+- Pattern transitions
+- Timing information
+- Your own `Serial.print()` debug messages
+
+Example:
+```cpp
+void myPattern() {
+  static unsigned long lastDebug = 0;
+
+  if (millis() - lastDebug > 1000) {
+    Serial.println("My pattern is running!");
+    lastDebug = millis();
+  }
+
+  // Pattern code...
+}
+```
+
 ## Power Considerations
 
 ### Current Draw
@@ -175,7 +382,28 @@ const int AUTO_CYCLE_DURATION = 10000; // milliseconds
 
 ## Version History
 
-### v1.0.3 Build 14 (Current)
+### v1.2.0 Build 16 (Current) - Modular Pattern Architecture
+- **Major refactoring for extensibility**
+- Added comprehensive "Creating Custom Patterns" documentation
+- Added CUSTOM PATTERNS section with templates and examples
+- Introduced NUM_PATTERNS constant for easy pattern management
+- Enhanced code comments with step-by-step pattern addition guide
+- Added pattern templates: simple timer-based and complex completion-based
+- Included example patterns: Red Wipe and Breathing Effect
+- Updated README with detailed pattern creation tutorial
+- Architecture optimized for easy customization and learning
+
+### v1.1.0 Build 15 - Simplified and Documented
+- Removed all Christmas pattern functions
+- Removed non-functional button handling code
+- Removed unused modes (kept only auto-cycle)
+- Added comprehensive inline documentation
+- Enhanced header comments with design patterns
+- Documented FLIGHT pattern phases and timing
+- Explained non-linear motion implementation
+- Code reorganized for clarity
+
+### v1.0.3 Build 14
 - Restored original rainbow pattern (all 41 LEDs)
 - Restored brightness to 50
 - Auto-cycle: FLIGHT, SLOW RAINBOW, FAST WHITE, RAINBOW PROPS

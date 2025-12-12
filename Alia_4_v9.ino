@@ -1,45 +1,75 @@
 /*
  * Alia_4 - Beta Alia eVTOL LED Animation Controller
  *
- * VERSION: 1.1.0 (Simplified)
- * BUILD: 15
+ * VERSION: 1.2.0 (Modular Pattern Architecture)
+ * BUILD: 16
  * DATE: 2024-12-12
  *
- * This is a simplified, well-commented version intended as a reference for
- * building LED animation controllers with complex timing patterns.
+ * This is a well-documented reference implementation for building LED animation
+ * controllers with modular patterns. Easy to customize and extend!
  *
- * Hardware: Seeed XIAO RP2040
- * LED Controller: WS2812B (41 LEDs total)
+ * ========== HARDWARE CONFIGURATION ==========
+ * Board: Seeed XIAO RP2040
+ * LEDs: WS2812B addressable LEDs (41 total)
  *   - 4 Lift Props (9 LEDs each): LEDs 0-35
  *   - Tail Prop (5 LEDs): LEDs 36-40
  *
- * Auto-Cycle Patterns (loops continuously):
- *   1. FLIGHT: Realistic eVTOL flight simulation with 5 phases (~36 seconds)
- *      - Uses non-linear acceleration/deceleration for smooth, visible animations
- *      - Props counter-rotate, tail speed varies by phase
- *   2. SLOW RAINBOW: Full rainbow color cycle across all LEDs (10 seconds)
- *   3. FAST WHITE: Sine wave running white lights (10 seconds)
- *   4. RAINBOW PROPS: Theater chase rainbow effect (10 seconds)
- *
- * Pin Assignments (Seeed XIAO RP2040):
- *   - GPIO 1: Port navigation light (blinking on colored patterns, constant on white)
- *   - GPIO 2: Nose navigation light
+ * Pin Assignments:
+ *   - GPIO 0: Starboard navigation light (green)
+ *   - GPIO 1: Port navigation light (red)
+ *   - GPIO 2: Nose navigation light (white)
  *   - GPIO 4: WS2812B data line
- *   - GPIO 0: Starboard navigation light
  *
- * Key Implementation Notes:
- *   - FLIGHT pattern uses completion flag, not timer (prevents interruption mid-sequence)
- *   - Non-linear motion uses exponential curves (progress²) for realistic acceleration
- *   - 100ms delay between patterns prevents power supply brownouts
- *   - Props show 2-LED "blade" pattern when spinning, static when parked
+ * ========== AUTO-CYCLE PATTERNS ==========
+ * The system automatically cycles through these patterns:
+ *   1. FLIGHT      - eVTOL flight simulation (~36s) - Uses completion flag
+ *   2. SLOW RAINBOW - Rainbow cycle (10s) - Uses timer
+ *   3. FAST WHITE   - Running white lights (10s) - Uses timer
+ *   4. RAINBOW PROPS - Theater chase rainbow (10s) - Uses timer
+ *
+ * ========== HOW TO ADD YOUR OWN PATTERN ==========
+ * Follow these steps to add a new pattern to the auto-cycle:
+ *
+ * STEP 1: Write your pattern function
+ *   - For simple patterns: void myPattern() { ... }
+ *   - For complex patterns: bool myPattern() { return true; } // true when done
+ *   - Use strip.setPixelColor() to set LED colors
+ *   - Call strip.show() to update the LEDs
+ *   - Call lights() or lights(false) for navigation lights
+ *   - Check gotBreak flag to allow early exit
+ *
+ * STEP 2: Add your pattern to the CUSTOM PATTERNS section (line ~600)
+ *   - See the pattern template and examples
+ *
+ * STEP 3: Update NUM_PATTERNS constant (line ~76)
+ *   - Increment by 1 for each pattern you add
+ *
+ * STEP 4: Add your pattern to the switch statement in loop() (line ~1020)
+ *   - Add a new case with your pattern number
+ *   - Call your pattern function
+ *
+ * STEP 5: Add pattern name to subModeNames array (line ~1032)
+ *   - For debug output
+ *
+ * See README.md for detailed examples and best practices.
+ *
+ * ========== KEY DESIGN PATTERNS ==========
+ * - Finite State Machine: Uses phase variable to track animation stages
+ * - Non-linear Motion: Exponential curves (progress²) for realistic movement
+ * - Completion Flags: Complex patterns return bool, simple patterns use timer
+ * - Power Management: 100ms delay between patterns prevents brownouts
  */
 
 #include <Adafruit_NeoPixel.h>
 #include <Wire.h>
 
 // ===== VERSION INFO =====
-#define VERSION "1.1.0"
-#define BUILD_NUMBER 15
+#define VERSION "1.2.0"
+#define BUILD_NUMBER 16
+
+// ===== PATTERN CONFIGURATION =====
+// ***** CHANGE THIS when you add/remove patterns from auto-cycle *****
+#define NUM_PATTERNS 4  // Total number of patterns in auto-cycle (0-3)
 
 // ===== LED CONFIGURATION =====
 // These brightness values work well with USB-C power (2A+)
@@ -969,6 +999,126 @@ bool flightPattern() {
   return false;  // Still running
 }
 
+// ============================================================================
+// ===== CUSTOM PATTERNS SECTION =====
+// ============================================================================
+//
+// Add your own custom patterns here! Follow the template below.
+//
+// PATTERN TEMPLATE - Copy this to create your own pattern:
+//
+// // Pattern description - what does it do?
+// void myCustomPattern() {
+//   // Your animation code here
+//   // Example: Light up all LEDs in a specific color
+//   for (int i = 0; i < LED_COUNT; i++) {
+//     strip.setPixelColor(i, strip.Color(255, 0, 0));  // Red
+//   }
+//   strip.show();
+//   lights();  // Update navigation lights (blinking for colored patterns)
+//   delay(50); // Small delay to control animation speed
+// }
+//
+// ADVANCED PATTERN TEMPLATE - For patterns that need completion tracking:
+//
+// // Complex pattern with multiple phases - returns true when complete
+// bool myComplexPattern() {
+//   static int phase = 0;
+//   static unsigned long phaseStart = 0;
+//
+//   // Initialize on first call
+//   if (phaseStart == 0) {
+//     phaseStart = millis();
+//   }
+//
+//   // Your phase-based animation logic here
+//   if (phase == 0) {
+//     // Do something for 5 seconds
+//     if (millis() - phaseStart > 5000) {
+//       phase = 1;
+//       phaseStart = millis();
+//     }
+//   } else if (phase == 1) {
+//     // Do something else for 3 seconds
+//     if (millis() - phaseStart > 3000) {
+//       phase = 0;
+//       phaseStart = 0;
+//       return true;  // Signal completion
+//     }
+//   }
+//
+//   // Update LEDs
+//   strip.show();
+//   lights();
+//
+//   // Check for early exit
+//   if (gotBreak) {
+//     phase = 0;
+//     phaseStart = 0;
+//     gotBreak = false;
+//     return false;
+//   }
+//
+//   return false;  // Still running
+// }
+//
+// EXAMPLE CUSTOM PATTERN 1: Simple color wipe
+// Uncomment to use:
+//
+// void redWipePattern() {
+//   static int currentLED = 0;
+//   static unsigned long lastUpdate = 0;
+//
+//   if (millis() - lastUpdate > 50) {
+//     strip.setPixelColor(currentLED, strip.Color(brightness, 0, 0));
+//     strip.show();
+//     lights();
+//
+//     currentLED++;
+//     if (currentLED >= LED_COUNT) {
+//       currentLED = 0;
+//       strip.clear();
+//     }
+//
+//     lastUpdate = millis();
+//   }
+// }
+//
+// EXAMPLE CUSTOM PATTERN 2: Breathing effect
+// Uncomment to use:
+//
+// void breathingPattern() {
+//   static int brightness_val = 0;
+//   static int direction = 1;
+//   static unsigned long lastUpdate = 0;
+//
+//   if (millis() - lastUpdate > 20) {
+//     brightness_val += direction * 5;
+//     if (brightness_val >= 255) {
+//       brightness_val = 255;
+//       direction = -1;
+//     } else if (brightness_val <= 0) {
+//       brightness_val = 0;
+//       direction = 1;
+//     }
+//
+//     for (int i = 0; i < LED_COUNT; i++) {
+//       strip.setPixelColor(i, strip.Color(0, 0, brightness_val));
+//     }
+//     strip.show();
+//     lights();
+//
+//     lastUpdate = millis();
+//   }
+// }
+//
+// After adding your pattern:
+// 1. Increment NUM_PATTERNS at the top of the file
+// 2. Add a case to the switch statement in loop()
+// 3. Add the pattern name to subModeNames array
+//
+// ============================================================================
+
 // ===== MAIN LOOP =====
 // Runs continuously - manages auto-cycle pattern rotation
 //
@@ -1019,7 +1169,7 @@ void loop() {
   if (shouldAdvance) {
     lastModeChange = millis();
     autoCycleSubMode++;
-    if (autoCycleSubMode >= 4) {  // 4 patterns total (0-3)
+    if (autoCycleSubMode >= NUM_PATTERNS) {  // Uses NUM_PATTERNS constant
       autoCycleSubMode = 0;
     }
 
@@ -1028,33 +1178,54 @@ void loop() {
     strip.show();
     delay(100);  // 100ms stabilization delay
 
-    // Debug output
-    const char* subModeNames[] = {"FLIGHT", "SLOW RAINBOW", "FAST WHITE", "RAINBOW PROPS"};
+    // ***** ADD YOUR PATTERN NAME HERE (for debug output) *****
+    const char* subModeNames[] = {
+      "FLIGHT",         // Pattern 0
+      "SLOW RAINBOW",   // Pattern 1
+      "FAST WHITE",     // Pattern 2
+      "RAINBOW PROPS"   // Pattern 3
+      // Add more pattern names here as you add patterns
+    };
     Serial.print("===== Auto-cycle switching to: ");
     Serial.print(subModeNames[autoCycleSubMode]);
     Serial.println(" =====");
   }
 
-  // Run the current pattern
+  // ===== PATTERN EXECUTION =====
+  // ***** ADD YOUR PATTERN CASE HERE *****
   switch (autoCycleSubMode) {
     case 0:
       // FLIGHT - Complete eVTOL flight simulation (~36 seconds)
+      // Uses completion flag (returns true when done)
       patternComplete = flightPattern();
       break;
 
     case 1:
-      // SLOW RAINBOW - Full rainbow cycle across all 41 LEDs
+      // SLOW RAINBOW - Full rainbow cycle across all 41 LEDs (10 seconds)
+      // Uses timer (AUTO_CYCLE_DURATION)
       rainbow(waitTime / 5);
       break;
 
     case 2:
-      // FAST WHITE - Running white lights with sine wave
+      // FAST WHITE - Running white lights with sine wave (10 seconds)
+      // Uses timer (AUTO_CYCLE_DURATION)
       RunningLights(0xff, 0xff, 0xff, 50);
       break;
 
     case 3:
-      // RAINBOW PROPS - Theater chase rainbow effect
+      // RAINBOW PROPS - Theater chase rainbow effect (10 seconds)
+      // Uses timer (AUTO_CYCLE_DURATION)
       theaterChaseRainbow(waitTime);
       break;
+
+    // ***** ADD YOUR CUSTOM PATTERN CASES HERE *****
+    // Example:
+    // case 4:
+    //   myCustomPattern();
+    //   break;
+    //
+    // case 5:
+    //   patternComplete = myComplexPattern();  // If using completion flag
+    //   break;
   }
 }
