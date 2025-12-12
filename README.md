@@ -25,10 +25,6 @@ Automatically cycles through 4 animation patterns:
 
 4. **RAINBOW PROPS** (10 seconds) - Theater chase rainbow effect
 
-### Additional Modes
-- **Mode 1:** Christmas patterns (rainbow glitter, confetti, juggle, BPM, theater rainbow)
-- **Modes 2-6:** Individual pattern selections
-
 ## Hardware Configuration
 
 ### Microcontroller
