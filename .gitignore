@@ -1,0 +1,52 @@
+# Arduino build artifacts
+build/
+*.elf
+*.hex
+*.bin
+*.uf2
+*.map
+
+# Arduino IDE
+.DS_Store
+*.autosave
+*.bak
+*.tmp
+*~
+
+# Arduino library manager
+libraries/
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# OS files
+.DS_Store
+Thumbs.db
