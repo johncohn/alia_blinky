@@ -3,7 +3,19 @@
  *
  * VERSION: 1.2.0 (Modular Pattern Architecture)
  * BUILD: 16
- * DATE: 2024-12-12
+ * DATE: December 12, 2024
+ *
+ * CREATED BY: John Cohn, PhD
+ * EMAIL: jcohn@beta.team | johncohnvt@gmail.com
+ *
+ * DEVELOPMENT ASSISTANCE:
+ * This code was created with significant assistance from Anthropic Claude Sonnet 4.5
+ * AI model. The modular architecture, comprehensive documentation, and tutorial
+ * sections were developed collaboratively.
+ *
+ * LICENSE: MIT License
+ * Copyright (c) 2024 John Cohn
+ * See README.md for full license text.
  *
  * This is a well-documented reference implementation for building LED animation
  * controllers with modular patterns. Easy to customize and extend!

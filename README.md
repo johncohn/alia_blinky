@@ -844,8 +844,42 @@ Serial monitor (115200 baud) shows:
 
 ## Credits
 
+**Created by:**
+**John Cohn, PhD**
+December 2024
+📧 jcohn@beta.team | johncohnvt@gmail.com
+
 Developed for Beta Alia eVTOL scale model LED animation.
+
+**Development Assistance:**
+This code was created with significant assistance from **Anthropic Claude Sonnet 4.5** AI model. The modular architecture, comprehensive documentation, and tutorial sections were developed collaboratively to create an accessible learning resource for the maker community.
+
+**Special Thanks:**
+- Beta Technologies for inspiring this project
+- Adafruit for the NeoPixel library
+- Raspberry Pi Foundation for the RP2040 platform
+- The Arduino and maker community
 
 ## License
 
-This project is provided as-is for personal and educational use.
+MIT License
+
+Copyright (c) 2024 John Cohn
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
