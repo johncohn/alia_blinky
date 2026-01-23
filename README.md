@@ -4,7 +4,11 @@ LED animation controller for a scale model of the Beta Alia eVTOL aircraft. Feat
 
 **Version:** 1.2.0
 **Build:** 16
-**Hardware:** Seeed XIAO RP2040 + 41 WS2812B LEDs
+**Hardware:** Supports multiple boards (auto-detected) + 41 WS2812B LEDs
+- Seeed XIAO RP2040
+- Adafruit QT Py RP2040
+- Seeed XIAO ESP32-S3
+- Adafruit QT Py ESP32-S3 (no PSRAM)
 
 ## Features
 
@@ -22,16 +26,28 @@ Auto-cycles through 4 animation patterns:
 
 ### Requirements
 - Arduino IDE 2.x (or Arduino CLI)
-- Seeed XIAO RP2040 board
+- One of the supported boards (see Hardware section below)
 - Adafruit NeoPixel library
 
 ### Setup (Arduino IDE)
 
 1. **Install Board Support**
+
+   **For RP2040 boards:**
    - Tools → Board → Boards Manager
    - Search "rp2040"
    - Install "Raspberry Pi Pico/RP2040" (v5.4.3+)
-   - Select: Tools → Board → Seeed XIAO RP2040
+   - Select your board:
+     - Tools → Board → Seeed XIAO RP2040, or
+     - Tools → Board → Adafruit QT Py RP2040
+
+   **For ESP32-S3 boards:**
+   - Tools → Board → Boards Manager
+   - Search "esp32"
+   - Install "esp32 by Espressif Systems" (v3.3.3+)
+   - Select your board:
+     - Tools → Board → esp32 → XIAO_ESP32S3, or
+     - Tools → Board → esp32 → Adafruit QT Py ESP32-S3 no psram
 
 2. **Install Library**
    - Tools → Manage Libraries
@@ -40,16 +56,34 @@ Auto-cycles through 4 animation patterns:
 
 3. **Upload**
    - Download/clone this repo
-   - Open `Alia_4_v9.ino`
-   - Double-tap RESET button on board (RPI-RP2 drive appears)
+   - Open `Alia_blinky_esp32.ino`
+   - Select your board (step 1) and port
    - Click Upload (→)
 
 **CLI Alternative:**
+
+For RP2040:
 ```bash
 arduino-cli core install rp2040:rp2040
 arduino-cli lib install "Adafruit NeoPixel"
-arduino-cli compile --fqbn rp2040:rp2040:seeed_xiao_rp2040 Alia_4_v9.ino
-arduino-cli upload -p /dev/cu.usbmodem* --fqbn rp2040:rp2040:seeed_xiao_rp2040 Alia_4_v9.ino
+# Seeed XIAO RP2040:
+arduino-cli compile --fqbn rp2040:rp2040:seeed_xiao_rp2040 Alia_blinky_esp32.ino
+arduino-cli upload -p /dev/cu.usbmodem* --fqbn rp2040:rp2040:seeed_xiao_rp2040 Alia_blinky_esp32.ino
+# Adafruit QT Py RP2040:
+arduino-cli compile --fqbn rp2040:rp2040:adafruit_qtpy Alia_blinky_esp32.ino
+arduino-cli upload -p /dev/cu.usbmodem* --fqbn rp2040:rp2040:adafruit_qtpy Alia_blinky_esp32.ino
+```
+
+For ESP32-S3:
+```bash
+arduino-cli core install esp32:esp32
+arduino-cli lib install "Adafruit NeoPixel"
+# Seeed XIAO ESP32-S3:
+arduino-cli compile --fqbn esp32:esp32:XIAO_ESP32S3 Alia_blinky_esp32.ino
+arduino-cli upload -p /dev/cu.usbmodem* --fqbn esp32:esp32:XIAO_ESP32S3 Alia_blinky_esp32.ino
+# Adafruit QT Py ESP32-S3:
+arduino-cli compile --fqbn esp32:esp32:adafruit_qtpy_esp32s3_nopsram Alia_blinky_esp32.ino
+arduino-cli upload -p /dev/cu.usbmodem* --fqbn esp32:esp32:adafruit_qtpy_esp32s3_nopsram Alia_blinky_esp32.ino
 ```
 
 ## Hardware
@@ -59,13 +93,24 @@ arduino-cli upload -p /dev/cu.usbmodem* --fqbn rp2040:rp2040:seeed_xiao_rp2040 A
 - **Tail:** 5 LEDs (36-40)
 
 ### Pin Assignments
-- **GPIO 0:** Starboard nav light
-- **GPIO 1:** Port nav light
-- **GPIO 2:** Nose nav light
-- **GPIO 4:** WS2812B data line
+
+The code automatically detects your board and uses the correct GPIO pins. All boards use the same **physical pin positions** (TX, RX, SCK, MISO):
+
+| Board | Starboard (TX) | Port (RX) | Nose (SCK) | WS2812B (MISO) |
+|-------|----------------|-----------|------------|----------------|
+| **Seeed XIAO RP2040** | GPIO 0 | GPIO 1 | GPIO 2 | GPIO 3 |
+| **Adafruit QT Py RP2040** | GPIO 20 | GPIO 5 | GPIO 6 | GPIO 4 |
+| **Seeed XIAO ESP32-S3** | GPIO 43 | GPIO 44 | GPIO 8 | GPIO 7 |
+| **Adafruit QT Py ESP32-S3** | GPIO 5 | GPIO 16 | GPIO 36 | GPIO 37 |
+
+**Physical Connections:**
+- TX pin → Starboard navigation light (green)
+- RX pin → Port navigation light (red)
+- SCK pin → Nose navigation light (white)
+- MISO pin → WS2812B data line
 
 ### PCB Design Files
-`alia_blinky_kicad.zip` contains complete KiCad project files for a custom PCB.
+`alia_blinky_kicad.zip` contains complete KiCad project files for a custom PCB. The same PCB works with all supported boards - just swap the microcontroller!
 
 ## Customization
 
@@ -116,16 +161,25 @@ Pattern power draw:
 **LEDs brownout on USB-A power:**
 - Reduce brightness to 25
 - Use USB-C or external 5V supply
+- ESP32-S3 draws more power than RP2040 - use high-power USB port
 
 **Compilation errors:**
-- Ensure arduino-pico core v5.4.3+
+- For RP2040: Ensure arduino-pico core v5.4.3+
+- For ESP32: Ensure esp32 core v3.3.3+
 - Verify Adafruit NeoPixel library installed
-- Check FQBN: `rp2040:rp2040:seeed_xiao_rp2040`
+- Check you selected the correct board in Tools → Board
 
-**Props not animating:**
-- Check WS2812B connection on GPIO 4
+**LEDs not working:**
+- Check serial monitor (115200 baud) - should show detected board type
+- Verify correct board selected in Arduino IDE
+- Check WS2812B connection (MISO pin - see Pin Assignments table)
 - Verify 41 LEDs total
-- Check serial monitor (115200 baud) for debug info
+- ESP32-S3: Ensure "no psram" variant selected for QT Py
+
+**Wrong board detected:**
+- Serial monitor shows detected board on startup
+- Ensure correct board selected in Tools → Board menu
+- Code auto-detects based on compiler flags
 
 ## Documentation
 
@@ -136,7 +190,8 @@ Pattern power draw:
 ## Credits
 
 **Created by:** John Cohn, PhD
-**Date:** December 2024
+**Original Date:** December 2024
+**Updated:** January 2025 (Multi-board support added)
 **Contact:** jcohn@beta.team | johncohnvt@gmail.com
 
 Developed with major assistance from Anthropic Claude.

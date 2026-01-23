@@ -17,16 +17,27 @@
  * See README.md for full license text.
  *
  * ========== HARDWARE CONFIGURATION ==========
- * Board: Seeed XIAO RP2040
+ * Supported Boards (auto-detected):
+ *   - Seeed XIAO RP2040
+ *   - Adafruit QT Py RP2040
+ *   - Seeed XIAO ESP32-S3
+ *   - Adafruit QT Py ESP32-S3 (no PSRAM)
+ *
  * LEDs: WS2812B addressable LEDs (41 total)
  *   - 4 Lift Props (9 LEDs each): LEDs 0-35
  *   - Tail Prop (5 LEDs): LEDs 36-40
  *
- * Pin Assignments:
- *   - GPIO 0: Starboard navigation light (green)
- *   - GPIO 1: Port navigation light (red)
- *   - GPIO 2: Nose navigation light (white)
- *   - GPIO 4: WS2812B data line
+ * Physical Pin Connections (same PCB works with all boards):
+ *   - TX pin: Starboard navigation light (green)
+ *   - RX pin: Port navigation light (red)
+ *   - SCK pin: Nose navigation light (white)
+ *   - MISO pin: WS2812B data line
+ *
+ * GPIO Mapping (auto-selected by compiler):
+ *   XIAO RP2040:    TX=GPIO0,  RX=GPIO1,  SCK=GPIO2,  MISO=GPIO3
+ *   QT Py RP2040:   TX=GPIO20, RX=GPIO5,  SCK=GPIO6,  MISO=GPIO4
+ *   XIAO ESP32-S3:  TX=GPIO43, RX=GPIO44, SCK=GPIO8,  MISO=GPIO7
+ *   QT Py ESP32-S3: TX=GPIO5,  RX=GPIO16, SCK=GPIO36, MISO=GPIO37
  *
  * ========== AUTO-CYCLE PATTERNS ==========
  * The system automatically cycles through these patterns:
@@ -88,11 +99,35 @@
 #define normProp 50    // Normal prop speed constant (legacy, not actively used)
 #define propSkip 2     // Prop skip constant for legacy prop() function
 
-// Seeed XIAO RP2040 Pin Definitions
-#define portPin 1      // GPIO 1 - Port navigation light (red)
-#define nosePin 2      // GPIO 2 - Nose navigation light (white)
-#define ledPin 4       // GPIO 4 - WS2812B data pin (Physical pin 10)
-#define starPin  0     // GPIO 0 - Starboard navigation light (green)
+// Pin Definitions - Auto-detect board type
+// Physical pins: starPin=TX, portPin=RX, nosePin=SCK, ledPin=MISO
+#if defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM) || defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3)
+  // Adafruit QT Py ESP32-S3 Pin Definitions
+  #define starPin 5      // GPIO 5 - Starboard navigation light (green) - Physical pin TX
+  #define portPin 16     // GPIO 16 - Port navigation light (red) - Physical pin RX
+  #define nosePin 36     // GPIO 36 - Nose navigation light (white) - Physical pin SCK
+  #define ledPin 37      // GPIO 37 - WS2812B data pin - Physical pin MISO
+#elif defined(ARDUINO_ADAFRUIT_QTPY_RP2040)
+  // Adafruit QT Py RP2040 Pin Definitions
+  #define starPin 20     // GPIO 20 - Starboard navigation light (green) - Physical pin TX
+  #define portPin 5      // GPIO 5 - Port navigation light (red) - Physical pin RX
+  #define nosePin 6      // GPIO 6 - Nose navigation light (white) - Physical pin SCK
+  #define ledPin 4       // GPIO 4 - WS2812B data pin - Physical pin MISO
+#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP32)
+  // Generic ESP32 - assuming Seeed XIAO ESP32-S3
+  // Note: Seeed XIAO ESP32-S3 has different pinout than QT Py
+  // TX=D6=GPIO43, RX=D7=GPIO44, SCK=D8=GPIO8, MISO=D9=GPIO7
+  #define starPin 43     // GPIO 43 - Starboard navigation light (green) - Physical pin TX/D6
+  #define portPin 44     // GPIO 44 - Port navigation light (red) - Physical pin RX/D7
+  #define nosePin 8      // GPIO 8 - Nose navigation light (white) - Physical pin SCK/D8
+  #define ledPin 7       // GPIO 7 - WS2812B data pin - Physical pin MISO/D9
+#else
+  // Seeed XIAO RP2040 Pin Definitions
+  #define starPin 0      // GPIO 0 - Starboard navigation light (green) - Physical pin TX/D6
+  #define portPin 1      // GPIO 1 - Port navigation light (red) - Physical pin RX/D7
+  #define nosePin 2      // GPIO 2 - Nose navigation light (white) - Physical pin SCK/D8
+  #define ledPin 3       // GPIO 3 - WS2812B data pin - Physical pin MISO/D9
+#endif
 #define waitTime 50    // Default wait time for pattern animations (ms)
 
 // ===== STATE VARIABLES =====
@@ -198,7 +233,15 @@ void setup() {
   Serial.println(VERSION);
   Serial.print("  Build: ");
   Serial.println(BUILD_NUMBER);
-  Serial.println("  Hardware: Seeed XIAO RP2040");
+  #if defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3_NOPSRAM) || defined(ARDUINO_ADAFRUIT_QTPY_ESP32S3)
+    Serial.println("  Hardware: Adafruit QT Py ESP32-S3");
+  #elif defined(ARDUINO_ADAFRUIT_QTPY_RP2040)
+    Serial.println("  Hardware: Adafruit QT Py RP2040");
+  #elif defined(ARDUINO_ARCH_ESP32) || defined(ESP32)
+    Serial.println("  Hardware: Seeed XIAO ESP32-S3");
+  #else
+    Serial.println("  Hardware: Seeed XIAO RP2040");
+  #endif
   Serial.println("========================================");
 
   // Pre-calculate RGB colors for different animation states
