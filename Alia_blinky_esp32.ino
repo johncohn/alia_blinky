@@ -34,7 +34,7 @@
  *   - MISO pin: WS2812B data line
  *
  * GPIO Mapping (auto-selected by compiler):
- *   XIAO RP2040:    TX=GPIO0,  RX=GPIO1,  SCK=GPIO2,  MISO=GPIO3
+ *   XIAO RP2040:    TX=GPIO0,  RX=GPIO1,  SCK=GPIO2,  MISO=GPIO4
  *   QT Py RP2040:   TX=GPIO20, RX=GPIO5,  SCK=GPIO6,  MISO=GPIO4
  *   XIAO ESP32-S3:  TX=GPIO43, RX=GPIO44, SCK=GPIO8,  MISO=GPIO7
  *   QT Py ESP32-S3: TX=GPIO5,  RX=GPIO16, SCK=GPIO36, MISO=GPIO37
@@ -126,7 +126,7 @@
   #define starPin 0      // GPIO 0 - Starboard navigation light (green) - Physical pin TX/D6
   #define portPin 1      // GPIO 1 - Port navigation light (red) - Physical pin RX/D7
   #define nosePin 2      // GPIO 2 - Nose navigation light (white) - Physical pin SCK/D8
-  #define ledPin 3       // GPIO 3 - WS2812B data pin - Physical pin MISO/D9
+  #define ledPin 4       // GPIO 4 - WS2812B data pin - Physical pin MISO/D9 (PIN_SPI0_MISO=4, not 3)
 #endif
 #define waitTime 50    // Default wait time for pattern animations (ms)
 
@@ -216,15 +216,36 @@ void setup() {
   pinMode(ledPin, OUTPUT);
 
   // Initialize I2C (not actively used, but kept for compatibility)
-  Wire.begin();
-  Wire.setClock(400000);  // 400kHz I2C clock
+  // Commented out: on RP2040, Wire uses PIO state machines which may conflict with NeoPixel
+  // Wire.begin();
+  // Wire.setClock(400000);  // 400kHz I2C clock
 
   // Initialize serial communication for debug output
   Serial.begin(115200);
+  // Wait for USB CDC serial to connect (needed on RP2040/USB boards)
+  // Blink nose light while waiting so you know the board is alive
+  unsigned long serialWaitStart = millis();
+  while (!Serial && (millis() - serialWaitStart < 5000)) {
+    digitalWrite(nosePin, HIGH); delay(100);
+    digitalWrite(nosePin, LOW);  delay(100);
+  }
 
   // Initialize LED strip
   strip.setBrightness(brightness);
   strip.begin();
+
+  // ===== LED HARDWARE TEST =====
+  // Lights all LEDs red for 2 seconds right at boot.
+  // If you see red: strip.show() works, issue is in pattern logic.
+  // If you see nothing: hardware problem (wiring, power, bad LED at position 0).
+  Serial.println("LED TEST: lighting all red for 2s...");
+  strip.fill(strip.Color(50, 0, 0));
+  strip.show();
+  delay(2000);
+  strip.clear();
+  strip.show();
+  Serial.println("LED TEST done.");
+  // ===========================
 
   // Print startup banner with version info
   Serial.println("========================================");

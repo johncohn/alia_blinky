@@ -98,7 +98,7 @@ The code automatically detects your board and uses the correct GPIO pins. All bo
 
 | Board | Starboard (TX) | Port (RX) | Nose (SCK) | WS2812B (MISO) |
 |-------|----------------|-----------|------------|----------------|
-| **Seeed XIAO RP2040** | GPIO 0 | GPIO 1 | GPIO 2 | GPIO 3 |
+| **Seeed XIAO RP2040** | GPIO 0 | GPIO 1 | GPIO 2 | GPIO 4 |
 | **Adafruit QT Py RP2040** | GPIO 20 | GPIO 5 | GPIO 6 | GPIO 4 |
 | **Seeed XIAO ESP32-S3** | GPIO 43 | GPIO 44 | GPIO 8 | GPIO 7 |
 | **Adafruit QT Py ESP32-S3** | GPIO 5 | GPIO 16 | GPIO 36 | GPIO 37 |
