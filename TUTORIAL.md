@@ -74,7 +74,7 @@ arduino-cli lib install "Adafruit NeoPixel"
    - Extract to a folder on your computer
 
 2. **Open the Project:**
-   - **Arduino IDE:** File → Open → Navigate to `Alia_4_v9.ino`
+   - **Arduino IDE:** File → Open → Navigate to `Alia_blinky_esp32.ino`
    - **CLI:** Navigate to the directory in terminal
 
 ### Step 5: Upload to Your Board
@@ -94,8 +94,8 @@ arduino-cli lib install "Adafruit NeoPixel"
 
    **CLI Alternative:**
    ```bash
-   arduino-cli compile --fqbn rp2040:rp2040:seeed_xiao_rp2040 Alia_4_v9.ino
-   arduino-cli upload -p /dev/cu.usbmodem* --fqbn rp2040:rp2040:seeed_xiao_rp2040 Alia_4_v9.ino
+   arduino-cli compile --fqbn rp2040:rp2040:seeed_xiao_rp2040 Alia_blinky_esp32.ino
+   arduino-cli upload -p /dev/cu.usbmodem* --fqbn rp2040:rp2040:seeed_xiao_rp2040 Alia_blinky_esp32.ino
    ```
 
 3. **Verify It Works:**
@@ -111,7 +111,7 @@ Let's create a simple pattern that makes all LEDs pulse red!
 
 ### Step 1: Write Your Pattern Function
 
-1. **Find the CUSTOM PATTERNS section** (around line 1002)
+1. **Find the CUSTOM PATTERNS section** (around line 1074)
 2. **Add this code:**
 
 ```cpp
@@ -150,7 +150,7 @@ void redPulsePattern() {
 
 ### Step 2: Update Pattern Count
 
-1. **Find line 72** (near the top of the file)
+1. **Find line 91** (near the top of the file)
 2. **Change:**
    ```cpp
    #define NUM_PATTERNS 4  // Total number of patterns
@@ -162,7 +162,7 @@ void redPulsePattern() {
 
 ### Step 3: Add to Auto-Cycle
 
-1. **Find the pattern execution switch** (around line 1196)
+1. **Find the pattern execution switch** (around line 1268)
 2. **Add a new case after case 3:**
 
 ```cpp
@@ -181,7 +181,7 @@ void redPulsePattern() {
 
 ### Step 4: Add Pattern Name for Debug Output
 
-1. **Find the subModeNames array** (around line 1182)
+1. **Find the subModeNames array** (around line 1254)
 2. **Add your pattern name:**
 
 ```cpp
@@ -211,12 +211,12 @@ Want to remove patterns you don't like? Here's how:
 
 ### Option A: Remove a Single Pattern (e.g., Remove SLOW RAINBOW)
 
-1. **Update NUM_PATTERNS** (line 72):
+1. **Update NUM_PATTERNS** (line 91):
    ```cpp
    #define NUM_PATTERNS 4  // Was 5, now 4
    ```
 
-2. **Remove the pattern case** (around line 1203):
+2. **Remove the pattern case** (around line 1275):
    - Delete or comment out the entire case for the pattern:
    ```cpp
    // case 1:
@@ -245,7 +245,7 @@ Want to remove patterns you don't like? Here's how:
      break;
    ```
 
-4. **Update pattern names array** (line 1182):
+4. **Update pattern names array** (line 1254):
    ```cpp
    const char* subModeNames[] = {
      "FLIGHT",
@@ -257,7 +257,7 @@ Want to remove patterns you don't like? Here's how:
 
 ### Option B: Remove ALL Patterns (Only Keep FLIGHT)
 
-1. **Update NUM_PATTERNS** (line 72):
+1. **Update NUM_PATTERNS** (line 91):
    ```cpp
    #define NUM_PATTERNS 1  // Only FLIGHT pattern
    ```
@@ -273,7 +273,7 @@ Want to remove patterns you don't like? Here's how:
    }
    ```
 
-3. **Update pattern names array** (line 1182):
+3. **Update pattern names array** (line 1254):
    ```cpp
    const char* subModeNames[] = {
      "FLIGHT"  // Only pattern
@@ -295,12 +295,12 @@ Want to remove patterns you don't like? Here's how:
 
 ### Making Patterns Run Longer or Shorter
 
-**For timer-based patterns**, change `AUTO_CYCLE_DURATION` (line 74):
+**For timer-based patterns**, change `AUTO_CYCLE_DURATION` (line 147):
 ```cpp
 const int AUTO_CYCLE_DURATION = 15000;  // 15 seconds instead of 10
 ```
 
-**For FLIGHT pattern**, modify phase durations (around line 641):
+**For FLIGHT pattern**, modify phase durations (around line 743):
 ```cpp
 const int liftTime = 10000;  // 10 seconds instead of 5
 ```
@@ -385,7 +385,7 @@ void myPattern() {
 
 ### Study the FLIGHT Pattern
 
-The FLIGHT pattern (line 593) is a great example of:
+The FLIGHT pattern (line 723) is a great example of:
 - Multi-phase animations
 - Non-linear motion (exponential curves)
 - Completion-based timing
