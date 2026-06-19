@@ -23,17 +23,19 @@ brew install arduino-cli  # macOS
 ### Step 2: Install Seeed XIAO RP2040 Board Support
 
 **Arduino IDE:**
-1. **Open Boards Manager:**
+1. **Add Seeed Studio XIAO RP2040 board package to your Arduino IDE:**
+   - Navigate to **File** > **Preferences**, and fill **Additional Boards Manager URLs** with the following url: `https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json`
+2. **Open Boards Manager:**
    - Click the Boards Manager icon (📋) in the left sidebar
    - Or go to: Tools → Board → Boards Manager
 
-2. **Add RP2040 Board Package:**
+3. **Add RP2040 Board Package:**
    - In the search box, type: `rp2040`
    - Find **"Raspberry Pi Pico/RP2040"** by Earle F. Philhower, III
    - Click **Install** (version 5.4.3 or later recommended)
    - Wait for installation to complete (may take a few minutes)
 
-3. **Select Your Board:**
+4. **Select Your Board:**
    - Go to: Tools → Board → Raspberry Pi RP2040 Boards
    - Select: **Seeed XIAO RP2040**
 
@@ -87,6 +89,7 @@ arduino-cli lib install "Adafruit NeoPixel"
 2. **Upload the Code:**
 
    **Arduino IDE:**
+   - Ensure the `Seeed XIAO RP2040` board is selected
    - Click the Upload button (→)
    - Or go to: Sketch → Upload
    - The code will compile and upload automatically
