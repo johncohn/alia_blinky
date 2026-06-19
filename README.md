@@ -184,6 +184,7 @@ Pattern power draw:
 ## Documentation
 
 - **[TUTORIAL.md](TUTORIAL.md)** - Complete step-by-step guide
+- **[SOLDERING.md](SOLDERING.md)** - Photo guide for soldering the microcontroller to the PCB
 - **[LICENSE](LICENSE)** - MIT License
 - **In-code comments** - Extensive documentation throughout
 
