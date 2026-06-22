@@ -1,6 +1,6 @@
-# Soldering the Alia Blinky PCB
+# Soldering and Gluing the Alia Blinky PCB
 
-This guide walks you through soldering the Seeed XIAO RP2040 microcontroller onto the Alia Blinky PCB. Soldering is optional — the board also works with the microcontroller plugged in via socket headers — but soldering it down gives a more secure, permanent connection.
+This guide walks you through two assembly steps: soldering the Seeed XIAO RP2040 microcontroller onto the Alia Blinky PCB, and gluing the prop and tail diffuser covers in place. Soldering is optional — the board also works with the microcontroller plugged in via socket headers — but soldering it down gives a more secure, permanent connection.
 
 **Time:** ~20 minutes  
 **Skill level:** Beginner-friendly
@@ -233,3 +233,111 @@ Congratulations — you're done! The back of the board should show two neat rows
 - Try holding the BOOT button while plugging in to enter bootloader mode
 
 See [TUTORIAL.md](TUTORIAL.md) for full firmware setup instructions.
+
+---
+
+# Part 2: Gluing the Prop and Tail Diffuser Covers
+
+Once the electronics are working, glue the white diffuser covers over the prop LED rings and the tail LED strip. These soften and spread the LED light for a realistic look.
+
+**Time:** ~15 minutes  
+**Skill level:** Beginner-friendly
+
+## What You Need
+
+- 4 prop diffuser covers (round, white) + 1 tail diffuser cover (oval, white)
+- Super glue (cyanoacrylate — Bob Smith Industries Maxi-Cure or similar extra-thick CA glue recommended)
+- CA glue accelerator spray (e.g., eRockets INSTA-SET)
+- Paper towel to work on — glue will bond to your table!
+
+> **Safety:** CA glue bonds skin instantly. Keep it off your fingers and away from your eyes. Work in a ventilated area.
+
+---
+
+## Step 1: Locate the diffuser covers
+
+![Assembled PCB with one prop diffuser cover nearby](images/gluing/glue_2.jpeg)
+
+You should have 4 round prop covers and 1 oval tail cover. The round covers go over each of the 4 prop LED rings; the oval cover goes over the tail LED strip at the bottom of the PCB.
+
+---
+
+## Step 2: Get your CA glue accelerator
+
+![Hand holding eRockets INSTA-SET accelerator bottle](images/gluing/glue_5.jpeg)
+
+Find your CA glue accelerator (INSTA-SET or equivalent). This spray is applied to the PCB first — it causes the CA glue on the cover to set almost instantly on contact, so you get a fast, strong bond without waiting.
+
+---
+
+## Step 3: Spray the prop and tail locations
+
+![Spraying accelerator onto a prop LED ring on the PCB](images/gluing/glue_7a.jpeg)
+
+Lightly spray the accelerator onto all four prop LED ring locations and the tail LED location. You don't need a lot — a quick mist is enough. Let it sit for a few seconds.
+
+---
+
+## Step 4: Get your super glue
+
+![Hand holding BSI Maxi-Cure CA glue bottle](images/gluing/glue_7b.jpeg)
+
+Find your super glue. Extra-thick CA glue (like BSI Maxi-Cure) works best here — it's viscous enough to stay put when you apply it to the cover. **This stuff is very strong — don't get it on your fingers or eyes.**
+
+---
+
+## Step 5: Apply glue to the prop cover posts
+
+![Applying a dab of CA glue to the center post of a prop cover](images/gluing/glue_7c.jpeg)
+
+Put a small dab of super glue on the center post (nub) on the underside of each prop cover. Do all 4 prop covers. You only need a small amount — CA glue is very strong and a little goes a long way.
+
+---
+
+## Step 6: Place each prop cover onto the PCB
+
+![Carefully pressing a prop cover onto a sprayed LED ring](images/gluing/glue_8.jpeg)
+
+Carefully lower each prop cover, glue-side down, onto its matching LED ring on the PCB. The center post should align with the center hole in the LED ring. The accelerator on the PCB will trigger the glue to set on contact.
+
+---
+
+## Step 7: Press down for 15 seconds
+
+![Thumb pressing down firmly on a prop cover](images/gluing/glue_10.jpeg)
+
+Press each cover down firmly for about 15 seconds to ensure full contact and a strong bond. The CA glue + accelerator combination sets fast, but holding it longer ensures a solid joint.
+
+---
+
+## Step 8: Check your work
+
+![PCB held up showing two prop covers attached, tail cover visible](images/gluing/glue_17.jpeg)
+
+After attaching all 4 prop covers, it should look like this — covers sitting flat and flush on each LED ring. If a cover feels loose, apply a small drop of CA glue around the edge and press again.
+
+---
+
+## Step 9: Apply glue to the tail diffuser edge
+
+![Applying CA glue to the edge of the tail diffuser cover](images/gluing/glue_19.jpeg)
+
+Apply a thin bead of super glue around the edge of the tail diffuser cover (the oval piece). This cover sits over the tail LED strip rather than having a center post, so edge gluing is the method here.
+
+---
+
+## Step 10: Spray the tail location and press the cover down
+
+![Pressing tail diffuser onto the sprayed tail area of the PCB](images/gluing/glue_20.jpeg)
+
+Spray the tail LED location on the PCB with accelerator, then immediately press the tail diffuser — glue edge down — onto the tail area. The glue will set on contact with the accelerator.
+
+---
+
+## Step 11: Hold for 15 seconds
+
+![Thumb holding tail diffuser in place on PCB, most props already attached](images/gluing/glue_21.jpeg)
+
+Hold the tail diffuser firmly in place for 15 seconds. Once set, the PCB assembly is complete — all 4 prop covers and the tail cover should be solidly bonded.
+
+All done! Your Alia Blinky PCB is fully assembled and ready to install in the model.
