@@ -2,6 +2,13 @@
 
 LED animation controller for a scale model of the Beta Alia eVTOL aircraft. Features realistic flight simulation with dynamic prop and tail animations.
 
+## Key Documents
+
+| Document | Description |
+|----------|-------------|
+| [TUTORIAL.md](TUTORIAL.md) | Complete setup and customization guide |
+| [SOLDER.md](SOLDER.md) | Photo guide: soldering & gluing the PCB |
+
 **Version:** 1.2.0
 **Build:** 16
 **Hardware:** Supports multiple boards (auto-detected) + 41 WS2812B LEDs
