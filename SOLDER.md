@@ -303,3 +303,12 @@ Spray the tail LED location on the PCB with accelerator, then immediately press 
 Hold the tail diffuser firmly in place for 15 seconds. Once set, the PCB assembly is complete — all 4 prop covers and the tail cover should be solidly bonded.
 
 All done! Your Alia Blinky PCB is fully assembled and ready to install in the model.
+
+---
+
+## See Also
+
+| | |
+|---|---|
+| [README.md](README.md) | General info about the board, hardware, and features |
+| [TUTORIAL.md](TUTORIAL.md) | How to upload firmware and add custom LED patterns |

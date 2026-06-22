@@ -4,10 +4,10 @@ LED animation controller for a scale model of the Beta Alia eVTOL aircraft. Feat
 
 ## Key Documents
 
-| Document | Description |
-|----------|-------------|
-| [TUTORIAL.md](TUTORIAL.md) | Complete setup and customization guide |
-| [SOLDER.md](SOLDER.md) | Photo guide: soldering & gluing the PCB |
+| Document | Description | QR Code |
+|----------|-------------|---------|
+| [TUTORIAL.md](TUTORIAL.md) | Complete setup and customization guide | <img src="images/qr_tutorial.png" width="80"> |
+| [SOLDER.md](SOLDER.md) | Photo guide: soldering & gluing the PCB | <img src="images/qr_solder.png" width="80"> |
 
 **Version:** 1.2.0
 **Build:** 16

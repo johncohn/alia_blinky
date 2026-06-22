@@ -403,3 +403,12 @@ Create cool patterns? Share them!
 - Add your patterns
 - Submit a pull request
 - Help others learn!
+
+---
+
+## See Also
+
+| | |
+|---|---|
+| [README.md](README.md) | General info about the board, hardware, and features |
+| [SOLDER.md](SOLDER.md) | Photo guide for soldering and gluing the PCB assembly |
