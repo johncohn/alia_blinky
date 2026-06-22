@@ -184,7 +184,7 @@ Pattern power draw:
 ## Documentation
 
 - **[TUTORIAL.md](TUTORIAL.md)** - Complete step-by-step guide
-- **[SOLDERING_AND_GLUING.md](SOLDERING_AND_GLUING.md)** - Photo guide for soldering the microcontroller and gluing the diffuser covers
+- **[SOLDER.md](SOLDER.md)** - Photo guide for soldering the microcontroller and gluing the diffuser covers
 - **[LICENSE](LICENSE)** - MIT License
 - **In-code comments** - Extensive documentation throughout
 
