@@ -6,6 +6,7 @@ LED animation controller for a scale model of the Beta Alia eVTOL aircraft. Feat
 
 | Document | Description | QR Code |
 |----------|-------------|---------|
+| [GitHub Repo](https://github.com/johncohn/alia_blinky) | Top-level repository — browse, download, or fork | <img src="images/qr_repo.png" width="80"> |
 | [TUTORIAL.md](TUTORIAL.md) | Complete setup and customization guide | <img src="images/qr_tutorial.png" width="80"> |
 | [SOLDER.md](SOLDER.md) | Photo guide: soldering & gluing the PCB | <img src="images/qr_solder.png" width="80"> |
 
