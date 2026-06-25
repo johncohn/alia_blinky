@@ -6,9 +6,9 @@ LED animation controller for a scale model of the Beta Alia eVTOL aircraft. Feat
 
 | Document | Description | QR Code |
 |----------|-------------|---------|
-| [GitHub Repo](https://github.com/johncohn/alia_blinky) (https://github.com/johncohn/alia_blinky) | Top-level repository — browse, download, or fork | <img src="images/qr_repo.png" width="80"> |
-| [TUTORIAL.md](TUTORIAL.md) (https://github.com/johncohn/alia_blinky/blob/main/TUTORIAL.md) | Complete setup and customization guide | <img src="images/qr_tutorial.png" width="80"> |
-| [SOLDER.md](SOLDER.md) (https://github.com/johncohn/alia_blinky/blob/main/SOLDER.md) | Photo guide: soldering & gluing the PCB | <img src="images/qr_solder.png" width="80"> |
+| [GitHub Repo](https://github.com/johncohn/alia_blinky) (https://github.com/johncohn/alia_blinky) | Top-level repository — browse, download, or fork | <img src="images/qr_repo.png" width="120"> |
+| [TUTORIAL.md](TUTORIAL.md) (https://github.com/johncohn/alia_blinky/blob/main/TUTORIAL.md) | Complete setup and customization guide | <img src="images/qr_tutorial.png" width="120"> |
+| [SOLDER.md](SOLDER.md) (https://github.com/johncohn/alia_blinky/blob/main/SOLDER.md) | Photo guide: soldering & gluing the PCB | <img src="images/qr_solder.png" width="120"> |
 
 **Version:** 1.2.0
 **Build:** 16
