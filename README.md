@@ -33,7 +33,7 @@ Auto-cycles through 4 animation patterns:
 ## Quick Start
 
 ### Requirements
-- Arduino IDE 2.x (or Arduino CLI)
+- Arduino IDE 2.x
 - One of the supported boards (see Hardware section below)
 - Adafruit NeoPixel library
 
@@ -67,32 +67,6 @@ Auto-cycles through 4 animation patterns:
    - Open `Alia_blinky_esp32.ino`
    - Select your board (step 1) and port
    - Click Upload (→)
-
-**CLI Alternative:**
-
-For RP2040:
-```bash
-arduino-cli core install rp2040:rp2040
-arduino-cli lib install "Adafruit NeoPixel"
-# Seeed XIAO RP2040:
-arduino-cli compile --fqbn rp2040:rp2040:seeed_xiao_rp2040 Alia_blinky_esp32.ino
-arduino-cli upload -p /dev/cu.usbmodem* --fqbn rp2040:rp2040:seeed_xiao_rp2040 Alia_blinky_esp32.ino
-# Adafruit QT Py RP2040:
-arduino-cli compile --fqbn rp2040:rp2040:adafruit_qtpy Alia_blinky_esp32.ino
-arduino-cli upload -p /dev/cu.usbmodem* --fqbn rp2040:rp2040:adafruit_qtpy Alia_blinky_esp32.ino
-```
-
-For ESP32-S3:
-```bash
-arduino-cli core install esp32:esp32
-arduino-cli lib install "Adafruit NeoPixel"
-# Seeed XIAO ESP32-S3:
-arduino-cli compile --fqbn esp32:esp32:XIAO_ESP32S3 Alia_blinky_esp32.ino
-arduino-cli upload -p /dev/cu.usbmodem* --fqbn esp32:esp32:XIAO_ESP32S3 Alia_blinky_esp32.ino
-# Adafruit QT Py ESP32-S3:
-arduino-cli compile --fqbn esp32:esp32:adafruit_qtpy_esp32s3_nopsram Alia_blinky_esp32.ino
-arduino-cli upload -p /dev/cu.usbmodem* --fqbn esp32:esp32:adafruit_qtpy_esp32s3_nopsram Alia_blinky_esp32.ino
-```
 
 ## Hardware
 

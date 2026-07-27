@@ -23,24 +23,6 @@ This guide gets you from zero to a running board, then walks through writing you
 
 6. **Verify it's running** — Tools → Serial Monitor, set baud rate to **115200**. You should see the board type detected and pattern names printed as it cycles.
 
-**CLI alternative** (skips steps 2-5's menus):
-
-```bash
-# RP2040 — Seeed XIAO RP2040
-arduino-cli core install rp2040:rp2040
-arduino-cli lib install "Adafruit NeoPixel"
-arduino-cli compile --fqbn rp2040:rp2040:seeed_xiao_rp2040 Alia_blinky_esp32.ino
-arduino-cli upload -p /dev/cu.usbmodem* --fqbn rp2040:rp2040:seeed_xiao_rp2040 Alia_blinky_esp32.ino
-
-# ESP32-S3 — Seeed XIAO ESP32-S3
-arduino-cli core install esp32:esp32
-arduino-cli lib install "Adafruit NeoPixel"
-arduino-cli compile --fqbn esp32:esp32:XIAO_ESP32S3 Alia_blinky_esp32.ino
-arduino-cli upload -p /dev/cu.usbmodem* --fqbn esp32:esp32:XIAO_ESP32S3 Alia_blinky_esp32.ino
-```
-
-(Swap the FQBN for `rp2040:rp2040:adafruit_qtpy` or `esp32:esp32:adafruit_qtpy_esp32s3_nopsram` if you're using a QT Py board.)
-
 **Troubleshooting:** if upload fails on an RP2040 board, double-tap its RESET button to force bootloader mode (a drive named `RPI-RP2` should appear), then upload again.
 
 ---
