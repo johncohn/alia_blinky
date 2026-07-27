@@ -410,5 +410,6 @@ Create cool patterns? Share them!
 
 | | |
 |---|---|
+| [QUICKSTART.md](QUICKSTART.md) | Short guide: install software and write your first pattern |
 | [README.md](README.md) | General info about the board, hardware, and features |
 | [SOLDER.md](SOLDER.md) | Photo guide for soldering and gluing the PCB assembly |
