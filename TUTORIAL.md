@@ -1,408 +1,234 @@
-# Alia 4 LED Controller - Complete Tutorial
+# Alia 4 LED Controller - Tutorial
 
-This comprehensive tutorial will guide you from setup to creating custom LED patterns.
+This guide gets you from zero to a running board, then walks through writing your own LED patterns with several ready-to-use examples.
 
-## Part 1: Setting Up Your Development Environment
+## Part 1: Setup
 
-### Step 1: Install Arduino IDE
+1. **Get the code**
+   - Visit [github.com/johncohn/alia_blinky](https://github.com/johncohn/alia_blinky) → green **Code** button → **Download ZIP**, then unzip it
+   - Or: `git clone https://github.com/johncohn/alia_blinky.git`
 
-1. **Download Arduino IDE 2.x** from https://www.arduino.cc/en/software
-   - Choose your operating system (Windows, macOS, or Linux)
-   - Install the downloaded application
+2. **Install Arduino IDE 2.x** from [arduino.cc](https://www.arduino.cc/en/software)
 
-2. **Launch Arduino IDE**
-   - Open the application after installation
+3. **Install the board core** — Tools → Board → Boards Manager, then search and install:
+   - **RP2040 boards** (Seeed XIAO RP2040, Adafruit QT Py RP2040): search `rp2040`, install "Raspberry Pi Pico/RP2040" (v5.4.3+)
+   - **ESP32-S3 boards** (Seeed XIAO ESP32-S3, Adafruit QT Py ESP32-S3): search `esp32`, install "esp32 by Espressif Systems" (v3.3.3+)
 
-**CLI Alternative:**
+4. **Install the library** — Tools → Manage Libraries → search `Adafruit NeoPixel` → Install (v1.15.2+)
+
+5. **Open and upload**
+   - File → Open → `Alia_blinky_esp32.ino` from the folder you downloaded in step 1
+   - Tools → Board → select your specific board
+   - Plug in the board, select its port under Tools → Port, then click **Upload** (→)
+
+6. **Verify it's running** — Tools → Serial Monitor, set baud rate to **115200**. You should see the board type detected and pattern names printed as it cycles.
+
+**CLI alternative** (skips steps 2-5's menus):
+
 ```bash
-# Install Arduino CLI
-brew install arduino-cli  # macOS
-# Or download from: https://arduino.github.io/arduino-cli/
-```
-
-### Step 2: Install Seeed XIAO RP2040 Board Support
-
-**Arduino IDE:**
-1. **Add Seeed Studio XIAO RP2040 board package to your Arduino IDE:**
-   - Navigate to **File** > **Preferences**, and fill **Additional Boards Manager URLs** with the following url: `https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json`
-2. **Open Boards Manager:**
-   - Click the Boards Manager icon (📋) in the left sidebar
-   - Or go to: Tools → Board → Boards Manager
-
-3. **Add RP2040 Board Package:**
-   - In the search box, type: `rp2040`
-   - Find **"Raspberry Pi Pico/RP2040"** by Earle F. Philhower, III
-   - Click **Install** (version 5.4.3 or later recommended)
-   - Wait for installation to complete (may take a few minutes)
-
-4. **Select Your Board:**
-   - Go to: Tools → Board → Raspberry Pi RP2040 Boards
-   - Select: **Seeed XIAO RP2040**
-
-**CLI Alternative:**
-```bash
+# RP2040 — Seeed XIAO RP2040
 arduino-cli core install rp2040:rp2040
-```
-
-### Step 3: Install Required Libraries
-
-**Arduino IDE:**
-1. **Open Library Manager:**
-   - Click the Library Manager icon (📚) in the left sidebar
-   - Or go to: Tools → Manage Libraries
-
-2. **Install Adafruit NeoPixel:**
-   - In the search box, type: `Adafruit NeoPixel`
-   - Find **"Adafruit NeoPixel"** by Adafruit
-   - Click **Install** (version 1.15.2 or later)
-   - Click "Install All" if prompted for dependencies
-
-**CLI Alternative:**
-```bash
 arduino-cli lib install "Adafruit NeoPixel"
+arduino-cli compile --fqbn rp2040:rp2040:seeed_xiao_rp2040 Alia_blinky_esp32.ino
+arduino-cli upload -p /dev/cu.usbmodem* --fqbn rp2040:rp2040:seeed_xiao_rp2040 Alia_blinky_esp32.ino
+
+# ESP32-S3 — Seeed XIAO ESP32-S3
+arduino-cli core install esp32:esp32
+arduino-cli lib install "Adafruit NeoPixel"
+arduino-cli compile --fqbn esp32:esp32:XIAO_ESP32S3 Alia_blinky_esp32.ino
+arduino-cli upload -p /dev/cu.usbmodem* --fqbn esp32:esp32:XIAO_ESP32S3 Alia_blinky_esp32.ino
 ```
 
-### Step 4: Download the Alia 4 Code
+(Swap the FQBN for `rp2040:rp2040:adafruit_qtpy` or `esp32:esp32:adafruit_qtpy_esp32s3_nopsram` if you're using a QT Py board.)
 
-1. **Clone or Download from GitHub:**
-   ```bash
-   git clone https://github.com/johncohn/alia_blinky.git
-   ```
-
-   Or download ZIP:
-   - Visit: https://github.com/johncohn/alia_blinky
-   - Click the green "Code" button
-   - Select "Download ZIP"
-   - Extract to a folder on your computer
-
-2. **Open the Project:**
-   - **Arduino IDE:** File → Open → Navigate to `Alia_blinky_esp32.ino`
-   - **CLI:** Navigate to the directory in terminal
-
-### Step 5: Upload to Your Board
-
-1. **Put Board in Bootloader Mode:**
-   - **Method 1 (Recommended):** Double-tap the RESET button quickly
-   - **Method 2:** Hold BOOT button, press and release RESET, release BOOT
-   - A drive named **RPI-RP2** should appear on your computer
-
-2. **Upload the Code:**
-
-   **Arduino IDE:**
-   - Ensure the `Seeed XIAO RP2040` board is selected
-   - Click the Upload button (→)
-   - Or go to: Sketch → Upload
-   - The code will compile and upload automatically
-   - Board will reboot and start running the animations
-
-   **CLI Alternative:**
-   ```bash
-   arduino-cli compile --fqbn rp2040:rp2040:seeed_xiao_rp2040 Alia_blinky_esp32.ino
-   arduino-cli upload -p /dev/cu.usbmodem* --fqbn rp2040:rp2040:seeed_xiao_rp2040 Alia_blinky_esp32.ino
-   ```
-
-3. **Verify It Works:**
-   - **Arduino IDE:** Tools → Serial Monitor (set baud rate to 115200)
-   - **CLI:** `screen /dev/cu.usbmodem* 115200` (macOS/Linux)
-   - You should see version info and pattern transitions
+**Troubleshooting:** if upload fails on an RP2040 board, double-tap its RESET button to force bootloader mode (a drive named `RPI-RP2` should appear), then upload again.
 
 ---
 
-## Part 2: Adding Your First Custom Pattern
+## Part 2: Writing Your Own Pattern
 
-Let's create a simple pattern that makes all LEDs pulse red!
+Every custom pattern needs 4 edits to `Alia_blinky_esp32.ino`:
 
-### Step 1: Write Your Pattern Function
+| # | What | Where |
+|---|------|-------|
+| 1 | Write your pattern function | `CUSTOM PATTERNS SECTION` (~line 1075) |
+| 2 | Add one to `NUM_PATTERNS` | ~line 91 |
+| 3 | Add a `case` for it in the `switch` | `loop()` (~line 1268) |
+| 4 | Add its name to `subModeNames[]` | ~line 1254 |
 
-1. **Find the CUSTOM PATTERNS section** (around line 1074)
-2. **Add this code:**
+Rules of thumb: `case` numbers must be sequential starting at 0 with no gaps, and `NUM_PATTERNS` must equal the total count. The 4 built-in patterns already occupy cases 0-3, so your first custom pattern is **case 4**.
+
+### Worked Example: Red, White & Blue
+
+Let's add a pattern together, step by step.
+
+**Step 1 — write the function.** Paste this into the `CUSTOM PATTERNS SECTION` (~line 1075):
 
 ```cpp
-// RED PULSE - All LEDs pulse red
-void redPulsePattern() {
-  static int brightness_val = 0;
-  static int direction = 5;
+// RED WHITE BLUE - patriotic stripes marching down the string
+void redWhiteBluePattern() {
+  static int offset = 0;
   static unsigned long lastUpdate = 0;
 
-  // Update every 20ms for smooth animation
-  if (millis() - lastUpdate > 20) {
-    // Increase or decrease brightness
-    brightness_val += direction;
-
-    // Reverse direction at limits
-    if (brightness_val >= 255) {
-      brightness_val = 255;
-      direction = -5;
-    } else if (brightness_val <= 0) {
-      brightness_val = 0;
-      direction = 5;
-    }
-
-    // Set all LEDs to red with current brightness
+  if (millis() - lastUpdate > 100) {
     for (int i = 0; i < LED_COUNT; i++) {
-      strip.setPixelColor(i, strip.Color(brightness_val, 0, 0));
+      int stripe = (i + offset) % 3;
+      if (stripe == 0) strip.setPixelColor(i, strip.Color(brightness, 0, 0));         // Red
+      else if (stripe == 1) strip.setPixelColor(i, strip.Color(brightness, brightness, brightness)); // White
+      else strip.setPixelColor(i, strip.Color(0, 0, brightness));                     // Blue
     }
-
     strip.show();
-    lights();  // Blink navigation lights
-
+    lights();
+    offset++;
     lastUpdate = millis();
   }
 }
 ```
 
-### Step 2: Update Pattern Count
-
-1. **Find line 91** (near the top of the file)
-2. **Change:**
-   ```cpp
-   #define NUM_PATTERNS 4  // Total number of patterns
-   ```
-   **To:**
-   ```cpp
-   #define NUM_PATTERNS 5  // Total number of patterns (added RED PULSE)
-   ```
-
-### Step 3: Add to Auto-Cycle
-
-1. **Find the pattern execution switch** (around line 1268)
-2. **Add a new case after case 3:**
-
+**Step 2 — bump the pattern count.** At ~line 91, change:
 ```cpp
-    case 3:
-      // RAINBOW PROPS - Theater chase rainbow effect (10 seconds)
-      // Uses timer (AUTO_CYCLE_DURATION)
-      theaterChaseRainbow(waitTime);
-      break;
+#define NUM_PATTERNS 4
+```
+to:
+```cpp
+#define NUM_PATTERNS 5  // added RED WHITE BLUE
+```
 
+**Step 3 — add a case.** In the `switch` in `loop()` (~line 1268), add after `case 3`:
+```cpp
     case 4:
-      // RED PULSE - All LEDs pulse red (10 seconds)
-      // Uses timer (AUTO_CYCLE_DURATION)
-      redPulsePattern();
+      redWhiteBluePattern();
       break;
 ```
 
-### Step 4: Add Pattern Name for Debug Output
-
-1. **Find the subModeNames array** (around line 1254)
-2. **Add your pattern name:**
-
+**Step 4 — name it.** In `subModeNames[]` (~line 1254), add:
 ```cpp
 const char* subModeNames[] = {
-  "FLIGHT",         // Pattern 0
-  "SLOW RAINBOW",   // Pattern 1
-  "FAST WHITE",     // Pattern 2
-  "RAINBOW PROPS",  // Pattern 3
-  "RED PULSE"       // Pattern 4 - YOUR NEW PATTERN!
+  "FLIGHT", "SLOW RAINBOW", "FAST WHITE", "RAINBOW PROPS",
+  "RED WHITE BLUE"  // Pattern 4 - new!
 };
 ```
 
-### Step 5: Upload and Test!
+**Step 5 — test.** Upload, open Serial Monitor (115200 baud), and wait for the auto-cycle to print `RED WHITE BLUE` — that's your pattern running.
 
-1. **Save the file:** Ctrl+S (Windows/Linux) or Cmd+S (macOS)
-2. **Put board in bootloader mode** (double-tap RESET)
-3. **Click Upload** (→) in Arduino IDE
-4. **Watch your new pattern!**
-   - Wait through FLIGHT (~36s), RAINBOW (10s), WHITE (10s), RAINBOW PROPS (10s)
-   - Your RED PULSE pattern will appear after ~66 seconds!
+### More Examples
 
----
+Each of these drops in the same way — paste the function, add its `case`, add its name, bump `NUM_PATTERNS`. Add as many or as few as you like; just keep the `case` numbers sequential.
 
-## Part 3: Removing Patterns from Auto-Cycle
+**Dot Chase** — one white LED travels down the entire string (all 4 props, then the tail) and loops:
 
-Want to remove patterns you don't like? Here's how:
-
-### Option A: Remove a Single Pattern (e.g., Remove SLOW RAINBOW)
-
-1. **Update NUM_PATTERNS** (line 91):
-   ```cpp
-   #define NUM_PATTERNS 4  // Was 5, now 4
-   ```
-
-2. **Remove the pattern case** (around line 1275):
-   - Delete or comment out the entire case for the pattern:
-   ```cpp
-   // case 1:
-   //   // SLOW RAINBOW - Full rainbow cycle across all 41 LEDs (10 seconds)
-   //   // Uses timer (AUTO_CYCLE_DURATION)
-   //   rainbow(waitTime / 5);
-   //   break;
-   ```
-
-3. **Renumber remaining cases** (important!):
-   ```cpp
-   case 0:  // FLIGHT (unchanged)
-     patternComplete = flightPattern();
-     break;
-
-   case 1:  // Was case 2, now case 1
-     RunningLights(0xff, 0xff, 0xff, 50);
-     break;
-
-   case 2:  // Was case 3, now case 2
-     theaterChaseRainbow(waitTime);
-     break;
-
-   case 3:  // Was case 4, now case 3
-     redPulsePattern();
-     break;
-   ```
-
-4. **Update pattern names array** (line 1254):
-   ```cpp
-   const char* subModeNames[] = {
-     "FLIGHT",
-     "FAST WHITE",      // Removed "SLOW RAINBOW"
-     "RAINBOW PROPS",
-     "RED PULSE"
-   };
-   ```
-
-### Option B: Remove ALL Patterns (Only Keep FLIGHT)
-
-1. **Update NUM_PATTERNS** (line 91):
-   ```cpp
-   #define NUM_PATTERNS 1  // Only FLIGHT pattern
-   ```
-
-2. **Remove all other cases** (keep only case 0):
-   ```cpp
-   switch (autoCycleSubMode) {
-     case 0:
-       // FLIGHT - Complete eVTOL flight simulation (~36 seconds)
-       // Uses completion flag (returns true when done)
-       patternComplete = flightPattern();
-       break;
-   }
-   ```
-
-3. **Update pattern names array** (line 1254):
-   ```cpp
-   const char* subModeNames[] = {
-     "FLIGHT"  // Only pattern
-   };
-   ```
-
-4. **Result:** FLIGHT pattern will run continuously, restarting after completion!
-
-### Option C: Replace All Patterns with Your Own
-
-1. **Set NUM_PATTERNS** to the number of your custom patterns
-2. **Replace all cases** with your pattern functions
-3. **Update pattern names** array
-4. **Done!** You now have a completely custom LED controller
-
----
-
-## Part 4: Pattern Tips and Tricks
-
-### Making Patterns Run Longer or Shorter
-
-**For timer-based patterns**, change `AUTO_CYCLE_DURATION` (line 147):
 ```cpp
-const int AUTO_CYCLE_DURATION = 15000;  // 15 seconds instead of 10
-```
+void dotChasePattern() {
+  static int currentLED = 0;
+  static unsigned long lastUpdate = 0;
 
-**For FLIGHT pattern**, modify phase durations (around line 743):
-```cpp
-const int liftTime = 10000;  // 10 seconds instead of 5
-```
+  if (millis() - lastUpdate > 30) {
+    strip.clear();
+    strip.setPixelColor(currentLED, strip.Color(brightness, brightness, brightness));
+    strip.show();
+    lights();
 
-### Creating Prop-Specific Patterns
-
-Control individual props using these constants:
-```cpp
-void spinPropsClockwise() {
-  static int angle = 0;
-
-  strip.clear();
-
-  // All props spin the same direction
-  for (int prop = 0; prop < 4; prop++) {
-    int ledStart = prop * 9;  // Props are 9 LEDs each
-    strip.setPixelColor(ledStart + (angle % 9), normColor);
+    currentLED++;
+    if (currentLED >= LED_COUNT) currentLED = 0;
+    lastUpdate = millis();
   }
-
-  strip.show();
-  lights(false);
-
-  angle++;
-  delay(50);
 }
 ```
+`case 5: dotChasePattern(); break;` — name: `"DOT CHASE"`
 
-### Using Different Colors
+**Rainbow Props (Solid)** — each prop is a solid color; all 4 slowly cycle through the rainbow, offset so no two props ever match:
 
 ```cpp
-// RGB color values (0-255 for each)
-strip.Color(255, 0, 0)      // Pure red
-strip.Color(0, 255, 0)      // Pure green
-strip.Color(0, 0, 255)      // Pure blue
-strip.Color(255, 255, 0)    // Yellow
-strip.Color(255, 0, 255)    // Magenta
-strip.Color(0, 255, 255)    // Cyan
-strip.Color(255, 255, 255)  // White
-strip.Color(128, 0, 128)    // Purple (lower brightness)
-```
+void rainbowPropsSolidPattern() {
+  static uint16_t baseHue = 0;
+  static unsigned long lastUpdate = 0;
 
-### Debugging Your Pattern
+  if (millis() - lastUpdate > 20) {
+    uint16_t hueStep = 65536 / 4;  // split the color wheel 4 ways
 
-Add serial debug output:
-```cpp
-void myPattern() {
-  static unsigned long lastDebug = 0;
-
-  if (millis() - lastDebug > 1000) {
-    Serial.println("My pattern is running!");
-    Serial.print("Current animation value: ");
-    Serial.println(someValue);
-    lastDebug = millis();
+    for (int prop = 0; prop < 4; prop++) {
+      uint32_t color = strip.gamma32(strip.ColorHSV(baseHue + (prop * hueStep)));
+      for (int led = 0; led < 9; led++) {
+        strip.setPixelColor((prop * 9) + led, color);
+      }
+    }
+    strip.show();
+    lights();
+    baseHue += 100;
+    lastUpdate = millis();
   }
-
-  // Pattern code...
 }
 ```
+`case 6: rainbowPropsSolidPattern(); break;` — name: `"RAINBOW PROPS SOLID"`
 
-### Common Mistakes to Avoid
+**Sparkle** — random LEDs twinkle white against a dark background:
 
-1. **Forgetting to update NUM_PATTERNS** - Pattern won't appear in cycle
-2. **Not renumbering cases** - Patterns will play in wrong order
-3. **Missing strip.show()** - LEDs won't update
-4. **Long delay() calls** - Makes animations choppy, use millis() instead
-5. **Not checking gotBreak** - Pattern can't be interrupted
+```cpp
+void sparklePattern() {
+  static unsigned long lastUpdate = 0;
+
+  if (millis() - lastUpdate > 50) {
+    strip.clear();
+    for (int i = 0; i < 6; i++) {  // 6 sparkles at a time
+      strip.setPixelColor(random(LED_COUNT), strip.Color(brightness, brightness, brightness));
+    }
+    strip.show();
+    lights();
+    lastUpdate = millis();
+  }
+}
+```
+`case 7: sparklePattern(); break;` — name: `"SPARKLE"`
+
+**Fire** — random orange/red flicker across all LEDs:
+
+```cpp
+void firePattern() {
+  static unsigned long lastUpdate = 0;
+
+  if (millis() - lastUpdate > 40) {
+    for (int i = 0; i < LED_COUNT; i++) {
+      int flicker = random(brightness / 2, brightness);
+      strip.setPixelColor(i, strip.Color(flicker, flicker / 4, 0));
+    }
+    strip.show();
+    lights();
+    lastUpdate = millis();
+  }
+}
+```
+`case 8: firePattern(); break;` — name: `"FIRE"`
 
 ---
 
-## Part 5: Going Further
+## Part 3: Removing Patterns
 
-### More Pattern Ideas
+Don't like one of the built-in patterns? Same 4 spots, in reverse:
 
-- **Chase patterns:** LEDs moving in sequence
-- **Fire effect:** Random orange/red flickering
-- **Sparkle:** Random LEDs twinkling
-- **Color wheel:** Cycle through rainbow
-- **Strobe:** Rapid flashing (be careful with brightness!)
-- **Comet:** Trailing LED with fade
-- **Fill patterns:** Progressively fill/empty
-- **Wave patterns:** Sine wave brightness across LEDs
+1. Delete (or comment out) its `case` in the `switch`
+2. **Renumber the remaining cases** so they stay sequential from 0
+3. Remove its name from `subModeNames[]`
+4. Decrease `NUM_PATTERNS` by 1
+
+To keep only **FLIGHT** running on a loop: set `NUM_PATTERNS 1`, keep just `case 0`, and set `subModeNames[]` to `{ "FLIGHT" }`.
+
+---
+
+## Part 4: Tips and Common Mistakes
+
+- **Use `millis()`, not `delay()`,** for timing (see the examples above) — long `delay()` calls freeze the whole board and make animations choppy.
+- **Always call `strip.show()`** after setting pixel colors, or nothing will update.
+- **Call `lights()`** (or `lights(false)`) so the nose/wingtip nav lights stay in sync with your pattern.
+- **`NUM_PATTERNS` mismatch** is the most common bug — if your new pattern never appears, check it first.
+- **Case numbers must be sequential** (0, 1, 2, 3...) with no gaps or duplicates.
 
 ### Study the FLIGHT Pattern
 
-The FLIGHT pattern (line 723) is a great example of:
-- Multi-phase animations
-- Non-linear motion (exponential curves)
-- Completion-based timing
-- State management with static variables
-
-Read through it to learn advanced techniques!
+`flightPattern()` (~line 723) is the most advanced pattern in the file — a multi-phase state machine with non-linear (exponential) motion curves and completion-based timing instead of a fixed duration. Worth reading once you're comfortable with the basics above.
 
 ### Share Your Patterns
 
-Create cool patterns? Share them!
-- Fork the GitHub repo
-- Add your patterns
-- Submit a pull request
-- Help others learn!
+Fork the repo, add your patterns, and submit a pull request — help others learn!
 
 ---
 
@@ -410,6 +236,5 @@ Create cool patterns? Share them!
 
 | | |
 |---|---|
-| [QUICKSTART.md](QUICKSTART.md) | Short guide: install software and write your first pattern |
 | [README.md](README.md) | General info about the board, hardware, and features |
 | [SOLDER.md](SOLDER.md) | Photo guide for soldering and gluing the PCB assembly |

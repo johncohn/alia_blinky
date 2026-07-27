@@ -7,7 +7,6 @@ LED animation controller for a scale model of the Beta Alia eVTOL aircraft. Feat
 | Document | Description | QR Code |
 |----------|-------------|---------|
 | [GitHub Repo](https://github.com/johncohn/alia_blinky) (https://github.com/johncohn/alia_blinky) | Top-level repository — browse, download, or fork | <img src="images/qr_repo.png" width="120"> |
-| [QUICKSTART.md](QUICKSTART.md) (https://github.com/johncohn/alia_blinky/blob/main/QUICKSTART.md) | Short guide: install software and write your first pattern | — |
 | [TUTORIAL.md](TUTORIAL.md) (https://github.com/johncohn/alia_blinky/blob/main/TUTORIAL.md) | Complete setup and customization guide | <img src="images/qr_tutorial.png" width="120"> |
 | [SOLDER.md](SOLDER.md) (https://github.com/johncohn/alia_blinky/blob/main/SOLDER.md) | Photo guide: soldering & gluing the PCB | <img src="images/qr_solder.png" width="120"> |
 
@@ -125,12 +124,12 @@ The code automatically detects your board and uses the correct GPIO pins. All bo
 
 ### Add Your Own Pattern
 
-See [QUICKSTART.md](QUICKSTART.md) for a short guide with ready-to-paste examples (or [TUTORIAL.md](TUTORIAL.md) for the complete walkthrough). Quick summary:
+See [TUTORIAL.md](TUTORIAL.md) for a full walkthrough and several ready-to-paste examples. Quick summary:
 
-1. Write pattern function in CUSTOM PATTERNS section (~line 1002)
-2. Update `NUM_PATTERNS` constant (line 72)
-3. Add case to switch statement (line 1196)
-4. Add name to `subModeNames` array (line 1182)
+1. Write pattern function in CUSTOM PATTERNS section (~line 1075)
+2. Update `NUM_PATTERNS` constant (line 91)
+3. Add case to switch statement (line 1268)
+4. Add name to `subModeNames` array (line 1254)
 
 Example:
 ```cpp
@@ -145,12 +144,12 @@ void myPattern() {
 
 ### Adjust Settings
 
-**Brightness** (line 47):
+**Brightness** (line 96):
 ```cpp
 #define brightness 50  // 0-255 (lower for USB-A power)
 ```
 
-**Pattern Duration** (line 74):
+**Pattern Duration** (line 147):
 ```cpp
 const int AUTO_CYCLE_DURATION = 10000;  // milliseconds
 ```
@@ -192,7 +191,6 @@ Pattern power draw:
 
 ## Documentation
 
-- **[QUICKSTART.md](QUICKSTART.md)** - Short guide: install software and write your first pattern
 - **[TUTORIAL.md](TUTORIAL.md)** - Complete step-by-step guide
 - **[SOLDER.md](SOLDER.md)** - Photo guide for soldering the microcontroller and gluing the diffuser covers
 - **[LICENSE](LICENSE)** - MIT License
