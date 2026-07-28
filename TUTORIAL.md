@@ -303,6 +303,19 @@ To keep only **FLIGHT** running on a loop: set `NUM_PATTERNS 1`, keep just `case
 - **`NUM_PATTERNS` mismatch** is the most common bug when adding a whole new pattern (Part 3) — if it never appears, check it first.
 - **Case numbers must be sequential** (0, 1, 2, 3...) with no gaps or duplicates.
 
+### Debugging with Serial Monitor
+
+The Serial Monitor isn't just for the initial "is it running" check — it's the easiest way to see what your pattern is actually doing while you're writing it.
+
+- **Picking the right port:** if Tools → Port lists more than one, unplug the board and see which entry disappears — that's the one you want. Arduino IDE 2.x usually labels the port with the board name too.
+- **Baud rate must match:** set the Serial Monitor to **115200** (Tools → Serial Monitor, or the icon in the top right) — a mismatched rate just shows garbled text.
+- **Add your own debug output:** drop `Serial.print()` / `Serial.println()` calls into any pattern to watch variables change in real time, e.g.:
+  ```cpp
+  Serial.print("ledIndex: ");
+  Serial.println(ledIndex);
+  ```
+  Gate frequent ones behind a timer so they don't flood the monitor — see how `lastStateDebug` is used in `loop()` for an example.
+
 ### Study the FLIGHT Pattern
 
 `flightPattern()` (~line 710) is the most advanced pattern in the file — a multi-phase state machine with non-linear (exponential) motion curves and completion-based timing instead of a fixed duration. Worth reading once you're comfortable with the basics above.
