@@ -4,78 +4,46 @@ This guide gets you from zero to a running board, then walks through customizing
 
 ## Part 1: Setup
 
-No Arduino experience needed — just follow these in order.
+No Arduino experience needed — just follow these in order. This works fine on a Windows, Mac, or Linux computer. It's difficult to do on a Chromebook, though — if that's all you have, try sharing a laptop with another student for this project.
 
 1. **Install Arduino IDE 2.x** — the free program you'll use to load code onto the board. Download it from [arduino.cc](https://www.arduino.cc/en/software) and install it like any other app.
 
-2. **Get the code** — this is the one file that makes the LEDs do anything:
+2. **Install the board core** — this teaches Arduino IDE how to talk to your specific chip. This tutorial covers the **RP2040** — the chip used in this example (either the Seeed XIAO RP2040 or Adafruit QT Py RP2040 board). Other chips are supported too; see README.md if that's what you have.
+   - Tools → Board → Boards Manager
+   - Search `rp2040`, install "Raspberry Pi Pico/RP2040" (v5.4.3+)
+
+3. **Install the library** — Tools → Manage Libraries → search `Adafruit_NeoPixel` → Install (v1.15.2+). This is the ready-made code the sketch relies on to control the LEDs.
+
+4. **Get the code** — this is the one file that makes the LEDs do anything:
    - Open [alia_blinky.ino](https://raw.githubusercontent.com/johncohn/alia_blinky/main/alia_blinky.ino) → right-click → **Save As** → save it as `alia_blinky.ino`
    - That's all you need to get a board blinking. Want the PCB design files, soldering photos, or full source history too? Visit [github.com/johncohn/alia_blinky](https://github.com/johncohn/alia_blinky) → green **Code** button → **Download ZIP** (or `git clone`) instead.
 
-3. **Install the board core** — this teaches Arduino IDE how to talk to your specific chip. Go to Tools → Board → Boards Manager, then search and install the one matching your board:
-   - **RP2040 boards** (Seeed XIAO RP2040, Adafruit QT Py RP2040): search `rp2040`, install "Raspberry Pi Pico/RP2040" (v5.4.3+)
-   - **ESP32-S3 boards** (Seeed XIAO ESP32-S3, Adafruit QT Py ESP32-S3): search `esp32`, install "esp32 by Espressif Systems" (v3.3.3+)
-
-4. **Install the library** — a ready-made set of code the sketch relies on to control the LEDs. Tools → Manage Libraries → search `Adafruit NeoPixel` → Install (v1.15.2+)
-
 5. **Open and upload**
-   - File → Open → the `alia_blinky.ino` you saved in step 2
-   - Tools → Board → select your exact board (same one you picked in step 3)
+   - File → Open → the `alia_blinky.ino` you saved in step 4
+   - Tools → Board → Raspberry Pi RP2040 Boards → select your exact board (Seeed XIAO RP2040 or Adafruit QT Py RP2040)
    - Plug the board into your computer with a USB cable, then Tools → Port → select it (usually the only new entry in the list)
    - Click **Upload** (→ button, top left) — this compiles the code and sends it to the board
+   - You should now see the lights blinking, sequencing through all the patterns. From now on, whenever you plug the board into power, it will run these patterns — until you change the code and upload again.
 
-6. **Verify it's running** — Tools → Serial Monitor opens a window that shows text the board sends back over USB. Set its baud rate (bottom-right dropdown) to **115200**. You should see the board type it detected and the name of each pattern as it cycles through them.
+6. **Watch the output of the code** — Tools → Serial Monitor opens a window that shows text the board sends back over USB. Set its baud rate (bottom-right dropdown) to **115200**. You should see the board type it detected and the name of each pattern as it cycles through them.
 
-**Troubleshooting:** if upload fails on an RP2040 board, double-tap its RESET button to force bootloader mode (a drive named `RPI-RP2` should appear), then upload again.
+**Troubleshooting:** if upload fails, double-tap the board's RESET button to force bootloader mode (a drive named `RPI-RP2` should appear), then upload again.
 
 ---
 
 ## Part 2: Customize the CUSTOM Pattern (the easy way)
 
-The board automatically cycles through several light patterns (this is what "auto-cycle" means throughout this guide). One of them is called **CUSTOM**, and it's meant for you to change — it's already fully wired up, so you don't need to touch `NUM_PATTERNS`, the `switch` statement, or `subModeNames` (more on those in Part 3). Changing what CUSTOM does is a one-step copy-paste.
+The board automatically cycles through several light patterns (this is what "auto-cycle" means throughout this guide). One of them is called **CUSTOM**. By default it's a simple pixel-by-pixel color wipe — it lights the string one LED at a time in red, then does the same in green, then blue, then loops.
+
+We wrote CUSTOM so it's easy to change: either edit its code directly, or copy in one of the ready-made samples from the Sample patterns section below. (Part 3 covers how to add even more patterns alongside it.)
 
 ### Try a sample first
 
 1. Open `alia_blinky.ino` in Arduino IDE and find the function `customPattern()` (search for it with Ctrl+F / Cmd+F).
-2. Pick a sample from the list below and copy everything **inside its `{ }`** over the code inside `customPattern()`'s `{ }`. Leave the function's own name (`void customPattern()`) alone — only its body changes.
+2. Pick a sample from the Sample patterns section below and copy everything **inside its `{ }`** over the code inside `customPattern()`'s `{ }`. Leave the function's own name (`void customPattern()`) alone — only its body changes.
 3. Upload, open Serial Monitor (115200 baud), and wait for `CUSTOM` to print — that's your new pattern running in that slot.
 
 New to this? **Dot Chase** or **Sparkle** are the easiest to follow — start with one of those. Once copying a sample in feels easy, try tweaking values inside it (colors, timing numbers) before moving on to writing something from scratch in Part 3.
-
-### What CUSTOM does by default
-
-Out of the box, `customPattern()` is a simple pixel-by-pixel color wipe: it lights the string one LED at a time in red, then does the same in green, then blue, then loops. You don't need to understand this to try a sample above — it's here for reference:
-
-```cpp
-void customPattern() {
-  static int ledIndex = 0;
-  static int colorIndex = 0;
-  static unsigned long lastUpdate = 0;
-
-  // Basic colors to cycle through - EDIT ME!
-  uint32_t colors[] = {
-    strip.Color(brightness, 0, 0),  // Red
-    strip.Color(0, brightness, 0),  // Green
-    strip.Color(0, 0, brightness)   // Blue
-  };
-  int numColors = 3;
-
-  if (millis() - lastUpdate > 30) {
-    strip.setPixelColor(ledIndex, colors[colorIndex]);
-    strip.show();
-    lights();
-
-    ledIndex++;
-    if (ledIndex >= LED_COUNT) {
-      ledIndex = 0;
-      colorIndex = (colorIndex + 1) % numColors;
-      strip.clear();
-    }
-
-    lastUpdate = millis();
-  }
-}
-```
 
 ### Sample patterns
 
@@ -240,24 +208,59 @@ if (millis() - lastUpdate > 20) {
 }
 ```
 
+### Reference: what CUSTOM looks like by default
+
+You don't need to understand this to try a sample above — it's here in case you're curious what you're replacing:
+
+```cpp
+void customPattern() {
+  static int ledIndex = 0;
+  static int colorIndex = 0;
+  static unsigned long lastUpdate = 0;
+
+  // Basic colors to cycle through - EDIT ME!
+  uint32_t colors[] = {
+    strip.Color(brightness, 0, 0),  // Red
+    strip.Color(0, brightness, 0),  // Green
+    strip.Color(0, 0, brightness)   // Blue
+  };
+  int numColors = 3;
+
+  if (millis() - lastUpdate > 30) {
+    strip.setPixelColor(ledIndex, colors[colorIndex]);
+    strip.show();
+    lights();
+
+    ledIndex++;
+    if (ledIndex >= LED_COUNT) {
+      ledIndex = 0;
+      colorIndex = (colorIndex + 1) % numColors;
+      strip.clear();
+    }
+
+    lastUpdate = millis();
+  }
+}
+```
+
 ---
 
 ## Part 3: Writing an Additional Pattern From Scratch
 
-Once you're comfortable editing `customPattern()`, you might want a whole new pattern running *alongside* CUSTOM instead of replacing it. That needs 4 edits instead of 1:
+Once you're comfortable editing `customPattern()`, you might want a whole new pattern running *alongside* CUSTOM instead of replacing it. That needs 4 edits instead of 1 — here's what each one does and why it's needed:
 
-| # | What | Where |
-|---|------|-------|
-| 1 | Write your pattern function | `CUSTOM PATTERNS SECTION` (~line 1062) |
-| 2 | Add one to `NUM_PATTERNS` | ~line 78 |
-| 3 | Add a `case` for it in the `switch` | `loop()` (~line 1194) |
-| 4 | Add its name to `subModeNames[]` | ~line 1179 |
+| # | What | Where | Why |
+|---|------|-------|-----|
+| 1 | Write your pattern function | `CUSTOM PATTERNS SECTION` (~line 1062) | This is where you tell the chip what your new pattern should actually do |
+| 2 | Add one to `NUM_PATTERNS` | ~line 78 | This tells the chip there's one more pattern in the sequence to cycle through |
+| 3 | Add a `case` for it in the `switch` | `loop()` (~line 1194) | This tells the chip to actually run your new function when the cycle reaches that pattern number |
+| 4 | Add its name to `subModeNames[]` | ~line 1179 | This gives your pattern a readable name that prints to Serial Monitor, so you can confirm it's running |
 
 Rules of thumb: `case` numbers must be sequential starting at 0 with no gaps, and `NUM_PATTERNS` must equal the total count. The 5 built-in patterns (including CUSTOM) already occupy cases 0-4, so your first additional pattern is **case 5**.
 
 ### Worked Example: Red, White & Blue as its own pattern
 
-**Step 1 — write the function.** Paste into the `CUSTOM PATTERNS SECTION`:
+**Step 1 — write the function.** Paste into the `CUSTOM PATTERNS SECTION` — this defines what the pattern actually does:
 ```cpp
 void redWhiteBluePattern() {
   static int offset = 0;
@@ -278,16 +281,16 @@ void redWhiteBluePattern() {
 }
 ```
 
-**Step 2 — bump the pattern count.** At ~line 78, change `NUM_PATTERNS` from `5` to `6`.
+**Step 2 — bump the pattern count.** At ~line 78, change `NUM_PATTERNS` from `5` to `6` — this tells the chip there's now one more pattern in the sequence.
 
-**Step 3 — add a case.** In the `switch` in `loop()` (~line 1194), add after `case 4`:
+**Step 3 — add a case.** In the `switch` in `loop()` (~line 1194), add after `case 4` — this tells the chip to actually run your function when the cycle reaches pattern 5:
 ```cpp
     case 5:
       redWhiteBluePattern();
       break;
 ```
 
-**Step 4 — name it.** In `subModeNames[]` (~line 1179), add `"RED WHITE BLUE"` after `"CUSTOM"`.
+**Step 4 — name it.** In `subModeNames[]` (~line 1179), add `"RED WHITE BLUE"` after `"CUSTOM"` — this gives the pattern a readable name for Serial Monitor.
 
 **Step 5 — test.** Upload, open Serial Monitor (115200 baud), and wait for `RED WHITE BLUE` to print.
 
