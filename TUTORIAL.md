@@ -8,7 +8,7 @@ No Arduino experience needed — just follow these in order. This works fine on 
 
 1. **Install Arduino IDE 2.x** — the free program you'll use to load code onto the board. Download it from [arduino.cc](https://www.arduino.cc/en/software) and install it like any other app.
 
-2. **Install the board core** — this teaches Arduino IDE how to talk to your specific chip. This tutorial covers the **RP2040** — the chip used in this example (either the Seeed XIAO RP2040 or Adafruit QT Py RP2040 board). Other chips are supported too; see README.md if that's what you have.
+2. **Install the board core** — this teaches Arduino IDE how to talk to your specific chip. This tutorial covers the **Seeed XIAO RP2040** — the board used in this example. Other boards are supported too; see README.md if that's what you have.
    - Tools → Board → Boards Manager
    - Search `rp2040`, install "Raspberry Pi Pico/RP2040" (v5.4.3+)
 
@@ -20,7 +20,7 @@ No Arduino experience needed — just follow these in order. This works fine on 
 
 5. **Open and upload**
    - File → Open → the `alia_blinky.ino` you saved in step 4
-   - Tools → Board → Raspberry Pi RP2040 Boards → select your exact board (Seeed XIAO RP2040 or Adafruit QT Py RP2040)
+   - Tools → Board → Raspberry Pi RP2040 Boards → **Seeed XIAO RP2040**
    - Plug the board into your computer with a USB cable, then Tools → Port → select it (usually the only new entry in the list)
    - Click **Upload** (→ button, top left) — this compiles the code and sends it to the board
    - You should now see the lights blinking, sequencing through all the patterns. From now on, whenever you plug the board into power, it will run these patterns — until you change the code and upload again.
