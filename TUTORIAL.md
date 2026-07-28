@@ -17,7 +17,7 @@ This guide gets you from zero to a running board, then walks through customizing
 4. **Install the library** — Tools → Manage Libraries → search `Adafruit NeoPixel` → Install (v1.15.2+)
 
 5. **Open and upload**
-   - File → Open → `Alia_blinky.ino` from the folder you downloaded in step 1
+   - File → Open → `alia_blinky.ino` from the folder you downloaded in step 1
    - Tools → Board → select your specific board
    - Plug in the board, select its port under Tools → Port, then click **Upload** (→)
 
@@ -66,7 +66,7 @@ void customPattern() {
 
 ### Try a sample first
 
-1. Open `Alia_blinky.ino` and find `customPattern()`.
+1. Open `alia_blinky.ino` and find `customPattern()`.
 2. Pick a sample below and copy everything **inside its `{ }`** over the code inside `customPattern()`'s `{ }`. Leave the function's own name (`void customPattern()`) alone — only its body changes.
 3. Upload, open Serial Monitor (115200 baud), and wait for `CUSTOM` to print — that's your new pattern running in that slot.
 

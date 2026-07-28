@@ -65,7 +65,7 @@ Auto-cycles through 5 animation patterns:
 
 3. **Upload**
    - Download/clone this repo
-   - Open `Alia_blinky.ino`
+   - Open `alia_blinky.ino`
    - Select your board (step 1) and port
    - Click Upload (→)
 
