@@ -5,8 +5,8 @@ This guide gets you from zero to a running board, then walks through customizing
 ## Part 1: Setup
 
 1. **Get the code**
-   - Visit [github.com/johncohn/alia_blinky](https://github.com/johncohn/alia_blinky) → green **Code** button → **Download ZIP**, then unzip it
-   - Or: `git clone https://github.com/johncohn/alia_blinky.git`
+   - Open [alia_blinky.ino](https://raw.githubusercontent.com/johncohn/alia_blinky/main/alia_blinky.ino) → right-click → **Save As** → save it as `alia_blinky.ino`
+   - That's the only file you need to get a board blinking. Want the PCB design files, soldering photos, or full source history too? Visit [github.com/johncohn/alia_blinky](https://github.com/johncohn/alia_blinky) → green **Code** button → **Download ZIP** (or `git clone`) instead.
 
 2. **Install Arduino IDE 2.x** from [arduino.cc](https://www.arduino.cc/en/software)
 
@@ -17,7 +17,7 @@ This guide gets you from zero to a running board, then walks through customizing
 4. **Install the library** — Tools → Manage Libraries → search `Adafruit NeoPixel` → Install (v1.15.2+)
 
 5. **Open and upload**
-   - File → Open → `alia_blinky.ino` from the folder you downloaded in step 1
+   - File → Open → the `alia_blinky.ino` you saved in step 1
    - Tools → Board → select your specific board
    - Plug in the board, select its port under Tools → Port, then click **Upload** (→)
 

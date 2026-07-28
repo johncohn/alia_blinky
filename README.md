@@ -40,7 +40,11 @@ Auto-cycles through 5 animation patterns:
 
 ### Setup (Arduino IDE)
 
-1. **Install Board Support**
+1. **Get the code**
+   - Open [alia_blinky.ino](https://raw.githubusercontent.com/johncohn/alia_blinky/main/alia_blinky.ino) → right-click → **Save As** → save it as `alia_blinky.ino`
+   - (Want the PCB design files or soldering photos too? Grab the [full repo](https://github.com/johncohn/alia_blinky) instead — see Documentation below.)
+
+2. **Install Board Support**
 
    **For RP2040 boards:**
    - Tools → Board → Boards Manager
@@ -58,15 +62,14 @@ Auto-cycles through 5 animation patterns:
      - Tools → Board → esp32 → XIAO_ESP32S3, or
      - Tools → Board → esp32 → Adafruit QT Py ESP32-S3 no psram
 
-2. **Install Library**
+3. **Install Library**
    - Tools → Manage Libraries
    - Search "Adafruit NeoPixel"
    - Install (v1.15.2+)
 
-3. **Upload**
-   - Download/clone this repo
-   - Open `alia_blinky.ino`
-   - Select your board (step 1) and port
+4. **Upload**
+   - Open the `alia_blinky.ino` you saved in step 1
+   - Select your board (step 2) and port
    - Click Upload (→)
 
 ## Hardware
