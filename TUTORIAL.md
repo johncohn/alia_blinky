@@ -4,24 +4,27 @@ This guide gets you from zero to a running board, then walks through customizing
 
 ## Part 1: Setup
 
-1. **Get the code**
+No Arduino experience needed — just follow these in order.
+
+1. **Install Arduino IDE 2.x** — the free program you'll use to load code onto the board. Download it from [arduino.cc](https://www.arduino.cc/en/software) and install it like any other app.
+
+2. **Get the code** — this is the one file that makes the LEDs do anything:
    - Open [alia_blinky.ino](https://raw.githubusercontent.com/johncohn/alia_blinky/main/alia_blinky.ino) → right-click → **Save As** → save it as `alia_blinky.ino`
-   - That's the only file you need to get a board blinking. Want the PCB design files, soldering photos, or full source history too? Visit [github.com/johncohn/alia_blinky](https://github.com/johncohn/alia_blinky) → green **Code** button → **Download ZIP** (or `git clone`) instead.
+   - That's all you need to get a board blinking. Want the PCB design files, soldering photos, or full source history too? Visit [github.com/johncohn/alia_blinky](https://github.com/johncohn/alia_blinky) → green **Code** button → **Download ZIP** (or `git clone`) instead.
 
-2. **Install Arduino IDE 2.x** from [arduino.cc](https://www.arduino.cc/en/software)
-
-3. **Install the board core** — Tools → Board → Boards Manager, then search and install:
+3. **Install the board core** — this teaches Arduino IDE how to talk to your specific chip. Go to Tools → Board → Boards Manager, then search and install the one matching your board:
    - **RP2040 boards** (Seeed XIAO RP2040, Adafruit QT Py RP2040): search `rp2040`, install "Raspberry Pi Pico/RP2040" (v5.4.3+)
    - **ESP32-S3 boards** (Seeed XIAO ESP32-S3, Adafruit QT Py ESP32-S3): search `esp32`, install "esp32 by Espressif Systems" (v3.3.3+)
 
-4. **Install the library** — Tools → Manage Libraries → search `Adafruit NeoPixel` → Install (v1.15.2+)
+4. **Install the library** — a ready-made set of code the sketch relies on to control the LEDs. Tools → Manage Libraries → search `Adafruit NeoPixel` → Install (v1.15.2+)
 
 5. **Open and upload**
-   - File → Open → the `alia_blinky.ino` you saved in step 1
-   - Tools → Board → select your specific board
-   - Plug in the board, select its port under Tools → Port, then click **Upload** (→)
+   - File → Open → the `alia_blinky.ino` you saved in step 2
+   - Tools → Board → select your exact board (same one you picked in step 3)
+   - Plug the board into your computer with a USB cable, then Tools → Port → select it (usually the only new entry in the list)
+   - Click **Upload** (→ button, top left) — this compiles the code and sends it to the board
 
-6. **Verify it's running** — Tools → Serial Monitor, set baud rate to **115200**. You should see the board type detected and pattern names printed as it cycles.
+6. **Verify it's running** — Tools → Serial Monitor opens a window that shows text the board sends back over USB. Set its baud rate (bottom-right dropdown) to **115200**. You should see the board type it detected and the name of each pattern as it cycles through them.
 
 **Troubleshooting:** if upload fails on an RP2040 board, double-tap its RESET button to force bootloader mode (a drive named `RPI-RP2` should appear), then upload again.
 
@@ -29,9 +32,19 @@ This guide gets you from zero to a running board, then walks through customizing
 
 ## Part 2: Customize the CUSTOM Pattern (the easy way)
 
-The auto-cycle already includes a 5th pattern called **CUSTOM**, backed by a single function: `customPattern()` in the `CUSTOM PATTERNS SECTION` (~line 1062). It's already fully wired up — no `NUM_PATTERNS`, `switch`, or `subModeNames` edits needed. Changing what it does is a one-step copy-paste.
+The board automatically cycles through several light patterns (this is what "auto-cycle" means throughout this guide). One of them is called **CUSTOM**, and it's meant for you to change — it's already fully wired up, so you don't need to touch `NUM_PATTERNS`, the `switch` statement, or `subModeNames` (more on those in Part 3). Changing what CUSTOM does is a one-step copy-paste.
 
-Its default behavior is a simple pixel-by-pixel color wipe: it lights the string one LED at a time in red, then does the same in green, then blue, then loops:
+### Try a sample first
+
+1. Open `alia_blinky.ino` in Arduino IDE and find the function `customPattern()` (search for it with Ctrl+F / Cmd+F).
+2. Pick a sample from the list below and copy everything **inside its `{ }`** over the code inside `customPattern()`'s `{ }`. Leave the function's own name (`void customPattern()`) alone — only its body changes.
+3. Upload, open Serial Monitor (115200 baud), and wait for `CUSTOM` to print — that's your new pattern running in that slot.
+
+New to this? **Dot Chase** or **Sparkle** are the easiest to follow — start with one of those. Once copying a sample in feels easy, try tweaking values inside it (colors, timing numbers) before moving on to writing something from scratch in Part 3.
+
+### What CUSTOM does by default
+
+Out of the box, `customPattern()` is a simple pixel-by-pixel color wipe: it lights the string one LED at a time in red, then does the same in green, then blue, then loops. You don't need to understand this to try a sample above — it's here for reference:
 
 ```cpp
 void customPattern() {
@@ -64,34 +77,9 @@ void customPattern() {
 }
 ```
 
-### Try a sample first
-
-1. Open `alia_blinky.ino` and find `customPattern()`.
-2. Pick a sample below and copy everything **inside its `{ }`** over the code inside `customPattern()`'s `{ }`. Leave the function's own name (`void customPattern()`) alone — only its body changes.
-3. Upload, open Serial Monitor (115200 baud), and wait for `CUSTOM` to print — that's your new pattern running in that slot.
-
-Once that feels easy, try tweaking values inside a sample (colors, timing numbers) before moving on to writing something from scratch.
-
 ### Sample patterns
 
-**Red, White & Blue** — marching stripes down the whole string:
-```cpp
-static int offset = 0;
-static unsigned long lastUpdate = 0;
-
-if (millis() - lastUpdate > 100) {
-  for (int i = 0; i < LED_COUNT; i++) {
-    int stripe = (i + offset) % 3;
-    if (stripe == 0) strip.setPixelColor(i, strip.Color(brightness, 0, 0));         // Red
-    else if (stripe == 1) strip.setPixelColor(i, strip.Color(brightness, brightness, brightness)); // White
-    else strip.setPixelColor(i, strip.Color(0, 0, brightness));                     // Blue
-  }
-  strip.show();
-  lights();
-  offset++;
-  lastUpdate = millis();
-}
-```
+Roughly easiest to most advanced — pick any of them, in any order.
 
 **Dot Chase** — one white LED travels down the entire string (all 4 props, then the tail) and loops:
 ```cpp
@@ -106,27 +94,6 @@ if (millis() - lastUpdate > 30) {
 
   currentLED++;
   if (currentLED >= LED_COUNT) currentLED = 0;
-  lastUpdate = millis();
-}
-```
-
-**Rainbow Props (Solid)** — each prop is a solid color; all 4 slowly cycle through the rainbow, offset so no two props ever match:
-```cpp
-static uint16_t baseHue = 0;
-static unsigned long lastUpdate = 0;
-
-if (millis() - lastUpdate > 20) {
-  uint16_t hueStep = 65536 / 4;  // split the color wheel 4 ways
-
-  for (int prop = 0; prop < 4; prop++) {
-    uint32_t color = strip.gamma32(strip.ColorHSV(baseHue + (prop * hueStep)));
-    for (int led = 0; led < 9; led++) {
-      strip.setPixelColor((prop * 9) + led, color);
-    }
-  }
-  strip.show();
-  lights();
-  baseHue += 100;
   lastUpdate = millis();
 }
 ```
@@ -146,17 +113,21 @@ if (millis() - lastUpdate > 50) {
 }
 ```
 
-**Fire** — random orange/red flicker across all LEDs:
+**Red, White & Blue** — marching stripes down the whole string:
 ```cpp
+static int offset = 0;
 static unsigned long lastUpdate = 0;
 
-if (millis() - lastUpdate > 40) {
+if (millis() - lastUpdate > 100) {
   for (int i = 0; i < LED_COUNT; i++) {
-    int flicker = random(brightness / 2, brightness);
-    strip.setPixelColor(i, strip.Color(flicker, flicker / 4, 0));
+    int stripe = (i + offset) % 3;  // cycles 0, 1, 2, 0, 1, 2... to pick a color
+    if (stripe == 0) strip.setPixelColor(i, strip.Color(brightness, 0, 0));         // Red
+    else if (stripe == 1) strip.setPixelColor(i, strip.Color(brightness, brightness, brightness)); // White
+    else strip.setPixelColor(i, strip.Color(0, 0, brightness));                     // Blue
   }
   strip.show();
   lights();
+  offset++;
   lastUpdate = millis();
 }
 ```
@@ -174,6 +145,21 @@ if (millis() - lastUpdate > 20) {
 
   for (int i = 0; i < LED_COUNT; i++) {
     strip.setPixelColor(i, strip.Color(0, 0, level));  // Blue - EDIT ME!
+  }
+  strip.show();
+  lights();
+  lastUpdate = millis();
+}
+```
+
+**Fire** — random orange/red flicker across all LEDs:
+```cpp
+static unsigned long lastUpdate = 0;
+
+if (millis() - lastUpdate > 40) {
+  for (int i = 0; i < LED_COUNT; i++) {
+    int flicker = random(brightness / 2, brightness);
+    strip.setPixelColor(i, strip.Color(flicker, flicker / 4, 0));
   }
   strip.show();
   lights();
@@ -211,8 +197,14 @@ static bool toggle = false;
 static unsigned long lastUpdate = 0;
 
 if (millis() - lastUpdate > 500) {
-  uint32_t colorA = toggle ? strip.Color(brightness, 0, 0) : strip.Color(0, 0, brightness);
-  uint32_t colorB = toggle ? strip.Color(0, 0, brightness) : strip.Color(brightness, 0, 0);
+  uint32_t colorA, colorB;
+  if (toggle) {
+    colorA = strip.Color(brightness, 0, 0);  // Red
+    colorB = strip.Color(0, 0, brightness);  // Blue
+  } else {
+    colorA = strip.Color(0, 0, brightness);  // Blue
+    colorB = strip.Color(brightness, 0, 0);  // Red
+  }
 
   for (int led = 0; led < 9; led++) {
     strip.setPixelColor(PROP1_START + led, colorA);
@@ -223,6 +215,27 @@ if (millis() - lastUpdate > 500) {
   strip.show();
   lights();
   toggle = !toggle;
+  lastUpdate = millis();
+}
+```
+
+**Rainbow Props (Solid)** — each prop is a solid color; all 4 slowly cycle through the rainbow, offset so no two props ever match. `ColorHSV`/`gamma32` are NeoPixel library helpers that turn a hue angle (0-65535, i.e. one full trip around the color wheel) into a properly-corrected RGB color:
+```cpp
+static uint16_t baseHue = 0;
+static unsigned long lastUpdate = 0;
+
+if (millis() - lastUpdate > 20) {
+  uint16_t hueStep = 65536 / 4;  // split the color wheel 4 ways
+
+  for (int prop = 0; prop < 4; prop++) {
+    uint32_t color = strip.gamma32(strip.ColorHSV(baseHue + (prop * hueStep)));
+    for (int led = 0; led < 9; led++) {
+      strip.setPixelColor((prop * 9) + led, color);
+    }
+  }
+  strip.show();
+  lights();
+  baseHue += 100;
   lastUpdate = millis();
 }
 ```
