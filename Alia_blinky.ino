@@ -45,32 +45,19 @@
  *   2. SLOW RAINBOW - Rainbow cycle (10s) - Uses timer
  *   3. FAST WHITE   - Running white lights (10s) - Uses timer
  *   4. RAINBOW PROPS - Theater chase rainbow (10s) - Uses timer
+ *   5. CUSTOM       - Your editable pattern slot (10s) - Uses timer
  *
- * ========== HOW TO ADD YOUR OWN PATTERN ==========
- * Follow these steps to add a new pattern to the auto-cycle:
+ * ========== CUSTOMIZING ==========
+ * Easiest option: edit customPattern() in the CUSTOM PATTERNS SECTION below.
+ * It's already wired into the auto-cycle as "CUSTOM" - just replace its body
+ * (try copying in one of TUTORIAL.md's sample patterns) and re-upload. No
+ * other changes needed.
  *
- * STEP 1: Write your pattern function
- *   - For simple patterns: void myPattern() { ... }
- *   - For complex patterns: bool myPattern() { return true; } // true when done
- *   - Use strip.setPixelColor() to set LED colors
- *   - Call strip.show() to update the LEDs
- *   - Call lights() or lights(false) for navigation lights
- *   - Check gotBreak flag to allow early exit
+ * To add an ADDITIONAL pattern instead of replacing CUSTOM, see TUTORIAL.md -
+ * that requires 4 edits: write the function, bump NUM_PATTERNS, add a case
+ * to the switch in loop(), and add a name to subModeNames[].
  *
- * STEP 2: Add your pattern to the CUSTOM PATTERNS section (line ~600)
- *   - See the pattern template and examples
- *
- * STEP 3: Update NUM_PATTERNS constant (line ~76)
- *   - Increment by 1 for each pattern you add
- *
- * STEP 4: Add your pattern to the switch statement in loop() (line ~1020)
- *   - Add a new case with your pattern number
- *   - Call your pattern function
- *
- * STEP 5: Add pattern name to subModeNames array (line ~1032)
- *   - For debug output
- *
- * See README.md for detailed examples and best practices.
+ * See TUTORIAL.md for detailed examples and best practices.
  *
  * ========== KEY DESIGN PATTERNS ==========
  * - Finite State Machine: Uses phase variable to track animation stages
@@ -88,7 +75,7 @@
 
 // ===== PATTERN CONFIGURATION =====
 // ***** CHANGE THIS when you add/remove patterns from auto-cycle *****
-#define NUM_PATTERNS 4  // Total number of patterns in auto-cycle (0-3)
+#define NUM_PATTERNS 5  // Total number of patterns in auto-cycle (0-4)
 
 // ===== LED CONFIGURATION =====
 // These brightness values work well with USB-C power (2A+)
@@ -142,7 +129,7 @@ bool gotBreak = false;     // Flag to signal pattern interruption
 
 // Auto-cycle pattern management
 unsigned long lastModeChange = 0;      // Timestamp of last pattern change
-int autoCycleSubMode = 0;              // Current pattern in auto-cycle (0-3)
+int autoCycleSubMode = 0;              // Current pattern in auto-cycle (0-4)
 bool patternComplete = false;          // Completion flag for FLIGHT pattern
 const int AUTO_CYCLE_DURATION = 10000; // Duration for simple patterns (10 seconds)
 
@@ -1075,119 +1062,57 @@ bool flightPattern() {
 // ===== CUSTOM PATTERNS SECTION =====
 // ============================================================================
 //
-// Add your own custom patterns here! Follow the template below.
+// ----- CUSTOM: your editable pattern slot -----
+// Already wired into the auto-cycle as case 4, "CUSTOM" - no other edits
+// needed. Easiest way to customize: replace the body of customPattern()
+// below with one of the sample patterns from TUTORIAL.md (keep the function
+// name the same) and re-upload.
 //
-// PATTERN TEMPLATE - Copy this to create your own pattern:
+// Default behavior: a simple pixel-by-pixel wipe. It fills the whole string
+// one LED at a time in the first color, then starts over in the next color.
+void customPattern() {
+  static int ledIndex = 0;
+  static int colorIndex = 0;
+  static unsigned long lastUpdate = 0;
+
+  // Basic colors to cycle through - EDIT ME!
+  uint32_t colors[] = {
+    strip.Color(brightness, 0, 0),  // Red
+    strip.Color(0, brightness, 0),  // Green
+    strip.Color(0, 0, brightness)   // Blue
+  };
+  int numColors = 3;
+
+  if (millis() - lastUpdate > 30) {
+    strip.setPixelColor(ledIndex, colors[colorIndex]);
+    strip.show();
+    lights();
+
+    ledIndex++;
+    if (ledIndex >= LED_COUNT) {
+      ledIndex = 0;
+      colorIndex = (colorIndex + 1) % numColors;
+      strip.clear();
+    }
+
+    lastUpdate = millis();
+  }
+}
 //
-// // Pattern description - what does it do?
-// void myCustomPattern() {
-//   // Your animation code here
-//   // Example: Light up all LEDs in a specific color
+// ----- Want an ADDITIONAL pattern instead of replacing CUSTOM? -----
+// See TUTORIAL.md Part 2 for the full walkthrough and more sample patterns.
+// Quick template:
+//
+// void myPattern() {
 //   for (int i = 0; i < LED_COUNT; i++) {
 //     strip.setPixelColor(i, strip.Color(255, 0, 0));  // Red
 //   }
 //   strip.show();
-//   lights();  // Update navigation lights (blinking for colored patterns)
-//   delay(50); // Small delay to control animation speed
-// }
-//
-// ADVANCED PATTERN TEMPLATE - For patterns that need completion tracking:
-//
-// // Complex pattern with multiple phases - returns true when complete
-// bool myComplexPattern() {
-//   static int phase = 0;
-//   static unsigned long phaseStart = 0;
-//
-//   // Initialize on first call
-//   if (phaseStart == 0) {
-//     phaseStart = millis();
-//   }
-//
-//   // Your phase-based animation logic here
-//   if (phase == 0) {
-//     // Do something for 5 seconds
-//     if (millis() - phaseStart > 5000) {
-//       phase = 1;
-//       phaseStart = millis();
-//     }
-//   } else if (phase == 1) {
-//     // Do something else for 3 seconds
-//     if (millis() - phaseStart > 3000) {
-//       phase = 0;
-//       phaseStart = 0;
-//       return true;  // Signal completion
-//     }
-//   }
-//
-//   // Update LEDs
-//   strip.show();
 //   lights();
-//
-//   // Check for early exit
-//   if (gotBreak) {
-//     phase = 0;
-//     phaseStart = 0;
-//     gotBreak = false;
-//     return false;
-//   }
-//
-//   return false;  // Still running
 // }
 //
-// EXAMPLE CUSTOM PATTERN 1: Simple color wipe
-// Uncomment to use:
-//
-// void redWipePattern() {
-//   static int currentLED = 0;
-//   static unsigned long lastUpdate = 0;
-//
-//   if (millis() - lastUpdate > 50) {
-//     strip.setPixelColor(currentLED, strip.Color(brightness, 0, 0));
-//     strip.show();
-//     lights();
-//
-//     currentLED++;
-//     if (currentLED >= LED_COUNT) {
-//       currentLED = 0;
-//       strip.clear();
-//     }
-//
-//     lastUpdate = millis();
-//   }
-// }
-//
-// EXAMPLE CUSTOM PATTERN 2: Breathing effect
-// Uncomment to use:
-//
-// void breathingPattern() {
-//   static int brightness_val = 0;
-//   static int direction = 1;
-//   static unsigned long lastUpdate = 0;
-//
-//   if (millis() - lastUpdate > 20) {
-//     brightness_val += direction * 5;
-//     if (brightness_val >= 255) {
-//       brightness_val = 255;
-//       direction = -1;
-//     } else if (brightness_val <= 0) {
-//       brightness_val = 0;
-//       direction = 1;
-//     }
-//
-//     for (int i = 0; i < LED_COUNT; i++) {
-//       strip.setPixelColor(i, strip.Color(0, 0, brightness_val));
-//     }
-//     strip.show();
-//     lights();
-//
-//     lastUpdate = millis();
-//   }
-// }
-//
-// After adding your pattern:
-// 1. Increment NUM_PATTERNS at the top of the file
-// 2. Add a case to the switch statement in loop()
-// 3. Add the pattern name to subModeNames array
+// Then: 1. Increment NUM_PATTERNS  2. Add a case in loop()'s switch
+//       3. Add its name to subModeNames[]
 //
 // ============================================================================
 
@@ -1255,7 +1180,8 @@ void loop() {
       "FLIGHT",         // Pattern 0
       "SLOW RAINBOW",   // Pattern 1
       "FAST WHITE",     // Pattern 2
-      "RAINBOW PROPS"   // Pattern 3
+      "RAINBOW PROPS",  // Pattern 3
+      "CUSTOM"          // Pattern 4 - your editable slot, see customPattern()
       // Add more pattern names here as you add patterns
     };
     Serial.print("===== Auto-cycle switching to: ");
@@ -1290,14 +1216,16 @@ void loop() {
       theaterChaseRainbow(waitTime);
       break;
 
-    // ***** ADD YOUR CUSTOM PATTERN CASES HERE *****
+    case 4:
+      // CUSTOM - Your editable pattern slot (10 seconds)
+      // Uses timer (AUTO_CYCLE_DURATION) - edit customPattern() to change it
+      customPattern();
+      break;
+
+    // ***** ADD ADDITIONAL PATTERN CASES HERE *****
     // Example:
-    // case 4:
-    //   myCustomPattern();
-    //   break;
-    //
     // case 5:
-    //   patternComplete = myComplexPattern();  // If using completion flag
+    //   myPattern();
     //   break;
   }
 }

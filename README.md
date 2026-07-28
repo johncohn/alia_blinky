@@ -20,7 +20,7 @@ LED animation controller for a scale model of the Beta Alia eVTOL aircraft. Feat
 
 ## Features
 
-Auto-cycles through 4 animation patterns:
+Auto-cycles through 5 animation patterns:
 
 1. **FLIGHT** (~36s) - Realistic eVTOL flight simulation with 5 phases
    - Lift, transition in, conventional flight, transition out, landing
@@ -29,6 +29,7 @@ Auto-cycles through 4 animation patterns:
 2. **SLOW RAINBOW** (10s) - Full rainbow color cycle
 3. **FAST WHITE** (10s) - Running white lights with sine wave
 4. **RAINBOW PROPS** (10s) - Theater chase rainbow effect
+5. **CUSTOM** (10s) - Your editable pattern slot (see Customization below)
 
 ## Quick Start
 
@@ -64,7 +65,7 @@ Auto-cycles through 4 animation patterns:
 
 3. **Upload**
    - Download/clone this repo
-   - Open `Alia_blinky_esp32.ino`
+   - Open `Alia_blinky.ino`
    - Select your board (step 1) and port
    - Click Upload (→)
 
@@ -98,32 +99,23 @@ The code automatically detects your board and uses the correct GPIO pins. All bo
 
 ### Add Your Own Pattern
 
-See [TUTORIAL.md](TUTORIAL.md) for a full walkthrough and several ready-to-paste examples. Quick summary:
+The easiest option: the auto-cycle already includes an editable **CUSTOM** slot, `customPattern()` (~line 1073) — just replace its body with one of TUTORIAL.md's sample patterns and re-upload. No other changes needed.
 
-1. Write pattern function in CUSTOM PATTERNS section (~line 1075)
-2. Update `NUM_PATTERNS` constant (line 91)
-3. Add case to switch statement (line 1268)
-4. Add name to `subModeNames` array (line 1254)
+See [TUTORIAL.md](TUTORIAL.md) for that walkthrough, several ready-to-paste samples, and how to add a whole *additional* pattern (which does require 4 edits):
 
-Example:
-```cpp
-void myPattern() {
-  for (int i = 0; i < LED_COUNT; i++) {
-    strip.setPixelColor(i, strip.Color(255, 0, 0));  // Red
-  }
-  strip.show();
-  lights();
-}
-```
+1. Write pattern function in CUSTOM PATTERNS section (~line 1062)
+2. Update `NUM_PATTERNS` constant (line 78)
+3. Add case to switch statement (line 1194)
+4. Add name to `subModeNames` array (line 1179)
 
 ### Adjust Settings
 
-**Brightness** (line 96):
+**Brightness** (line 83):
 ```cpp
 #define brightness 50  // 0-255 (lower for USB-A power)
 ```
 
-**Pattern Duration** (line 147):
+**Pattern Duration** (line 134):
 ```cpp
 const int AUTO_CYCLE_DURATION = 10000;  // milliseconds
 ```
