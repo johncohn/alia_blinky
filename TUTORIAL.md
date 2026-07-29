@@ -9,8 +9,12 @@ No Arduino experience needed — just follow these in order. This works fine on 
 1. **Install Arduino IDE 2.x** — the free program you'll use to load code onto the board. Download it from [arduino.cc](https://www.arduino.cc/en/software) and install it like any other app.
 
 2. **Install the board core** — this teaches Arduino IDE how to talk to your specific chip. This tutorial covers the **Seeed XIAO RP2040** — the board used in this example. Other boards are supported too; see README.md if that's what you have.
-   - Tools → Board → Boards Manager
-   - Search `rp2040`, install "Raspberry Pi Pico/RP2040" (v5.4.3+)
+   - First, add the board index so Arduino IDE knows where to find this board: open **Settings** (Windows/Linux: File → Preferences; Mac: Arduino IDE → Settings), and paste this into **Additional Boards Manager URLs**:
+     ```
+     https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
+     ```
+   - Then: Tools → Board → Boards Manager → search `rp2040` → install "Raspberry Pi Pico/RP2040" (v5.4.3+)
+   - If you get stuck, Seeed's own walkthrough (with screenshots) is here: [wiki.seeedstudio.com/XIAO-RP2040-with-Arduino](https://wiki.seeedstudio.com/XIAO-RP2040-with-Arduino/)
 
 3. **Install the library** — Tools → Manage Libraries → search `Adafruit_NeoPixel` → Install (v1.15.2+). This is the ready-made code the sketch relies on to control the LEDs.
 
