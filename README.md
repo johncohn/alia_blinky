@@ -123,6 +123,36 @@ See [TUTORIAL.md](TUTORIAL.md) for that walkthrough, several ready-to-paste samp
 const int AUTO_CYCLE_DURATION = 10000;  // milliseconds
 ```
 
+## Microphone Test (Sound Board)
+
+The newer "sound" version of the PCB adds an analog MEMS microphone (MSM381ACP003) wired to the **A3** pad. [`alia_mic_test/alia_mic_test.ino`](alia_mic_test/alia_mic_test.ino) is a separate sketch for checking whether the board can hear claps, talking, or music. It isn't hi-fi, just "is there a signal above the background noise".
+
+**Use it:**
+1. Open `alia_mic_test/alia_mic_test.ino`, select your board and port (same as above), and upload.
+2. Open **Tools → Serial Plotter** and set the baud rate to **115200**. All other debug text is turned off so the plotter only gets numbers.
+3. Stay quiet for about 5 seconds while it learns the room's noise floor, then clap or talk.
+
+**How it detects sound (STA/LTA):** every 20 ms it measures loudness as the RMS of the mic signal. It keeps two moving averages of that loudness: a short-term one that follows syllables and claps, and a long-term one that tracks the background noise. Sound counts as detected when the short-term average rises above the threshold, which always sits just above the noise floor. While sound is detected, the noise floor updates much more slowly, so talking doesn't push the threshold up.
+
+| Plot trace | Meaning |
+|------------|---------|
+| `sta` | Smoothed loudness (about 0.1 s average) |
+| `lta` | Learned noise floor (about 5 s average) |
+| `thresh` | Current trigger level: `lta × TRIGGER_RATIO + MIN_MARGIN` |
+| `detect` | Steps up while sound is detected |
+| `level` | Raw 20 ms loudness (off by default; set `PLOT_LEVEL true` to show it) |
+
+**On the board:** the nose and wingtip lights stay on while sound is detected, the prop LEDs act as a level meter (green → yellow → red), and one dim tail LED shows the sketch is running.
+
+**Tuning** (settings at the top of the sketch):
+- `TRIGGER_RATIO` (default 1.2) is the main sensitivity setting. Lower it to make detection easier, and raise it if the lights come on in a quiet room. Keep `RELEASE_RATIO` (1.05) below it.
+- `STA_TIME_MS` (100) controls how quickly the smoothed trace reacts. Around 50 shows separate syllables; around 200 shows whole words.
+- `LED_METER false` turns the LEDs off. The mic is powered from the same supply as the LEDs, so compare with this off if the noise floor looks high.
+
+Turning up the gain in software won't make it trigger more easily, because the noise floor scales by the same amount. A bigger real signal needs an amplifier in hardware.
+
+> **Hardware note:** on the current sound PCB, the mic's VDD is on the LED supply (`VBUS`, about 4.6 V), not 3.3 V. Check this against the MSM381ACP003 datasheet's rated supply voltage, and make sure the mic output on A3 stays below 3.3 V before relying on the readings.
+
 ## Power Considerations
 
 - **USB-C:** 2-3A (recommended)
@@ -162,6 +192,7 @@ Pattern power draw:
 
 - **[TUTORIAL.md](TUTORIAL.md)** - Complete step-by-step guide
 - **[SOLDER.md](SOLDER.md)** - Photo guide for soldering the microcontroller and gluing the diffuser covers
+- **[alia_mic_test/](alia_mic_test/alia_mic_test.ino)** - Microphone test sketch for the sound PCB (see [Microphone Test](#microphone-test-sound-board))
 - **[LICENSE](LICENSE)** - MIT License
 - **In-code comments** - Extensive documentation throughout
 
