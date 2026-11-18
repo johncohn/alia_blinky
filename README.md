@@ -153,6 +153,55 @@ Turning up the gain in software won't make it trigger more easily, because the n
 
 > **Hardware note:** on the current sound PCB, the mic's VDD is on the LED supply (`VBUS`, about 4.6 V), not 3.3 V. Check this against the MSM381ACP003 datasheet's rated supply voltage, and make sure the mic output on A3 stays below 3.3 V before relying on the readings.
 
+## Clapper Firmware (Sound Board)
+
+[`alia_clapper/alia_clapper.ino`](alia_clapper/alia_clapper.ino) is a separate firmware for the sound PCB. It has its own light patterns plus sound-reactive ones, and you control it with the BOOT button and claps. Upload it like `alia_blinky.ino` (same board and library setup). The tutorial sketch `alia_blinky.ino` is unchanged.
+
+**Controls:**
+
+| Control | Action |
+|---------|--------|
+| **BOOT button** ("B" on the XIAO) | Switch between NORMAL and SOUND mode (also turns the lights on if they were off) |
+| **Double clap** | Lights off / on (they come back on in the same mode) |
+
+- The lights always come on at power-up, in NORMAL mode.
+- Single claps and three or more claps are ignored.
+- Don't press the "R" button; it resets the board.
+
+**Feedback:**
+- The tail flashes white for every clap the board hears.
+- The props flash blue when entering SOUND mode and green when entering NORMAL.
+
+**Patterns** (each runs on a timer, then the next one in the same mode starts):
+
+| NORMAL mode | SOUND mode |
+|-------------|------------|
+| TAKE OFF: parked, props spool up, then hover | SOUND SWIRL: two-tone swirls in each prop; sound speeds them up, and each new sound flips their direction |
+| CTOL: props spin down to parked, tail fast (cruise) | SOUND COLORS: the whole aircraft shimmers in one color; each new sound jumps it to a new color |
+| LANDING: spin up, hold, spin down, rest on the ground | SOUND SPARKLE: a flowing color wash with sparkles; sound adds more, with a burst on each new sound |
+| SLOW RAINBOW, FAST WHITE, RAINBOW PROPS | SOUND RAINBOW: turning rainbow rings; sound spins them faster |
+| PROP COMETS: counter-rotating comets on each prop | |
+| SPARKLE: random fading twinkles | |
+
+In SOUND mode every LED is always lit, and sound changes the whole pattern at once. The overall brightness follows the sound too, dim when quiet and bright when loud.
+
+**Serial Monitor (115200)** prints every action and accepts these commands, each followed by Enter:
+
+| Type | Does |
+|------|------|
+| `v` | Live readout of the mic levels (quiet floor, level, loudness) |
+| `+` / `-` | Make the sound effects more / less sensitive; copy the printed `loudFullRatio` into the sketch to keep it |
+| `2` | Fake a double clap |
+| `b` | Fake a BOOT button press |
+
+**Tuning** (settings near the top of the sketch):
+- **Claps missed:** lower `CLAP_RATIO`.
+- **Music or talking counts as claps:** raise `CLAP_RATIO` or `CLAP_JUMP`.
+- **Effects too weak or too strong:** change `loudFullRatio`, or use `+` / `-` live.
+- **Resets during loud moments, or on USB-A power:** lower `SOUND_MAX_BRIGHTNESS`.
+
+The mic signal on the current PCB is very small (about 1 ADC count RMS in a quiet room), so the sound effects work best with talking or music fairly close to the board. A small amplifier stage in front of A3 in a future board revision would give much more range.
+
 ## Power Considerations
 
 - **USB-C:** 2-3A (recommended)
@@ -193,6 +242,7 @@ Pattern power draw:
 - **[TUTORIAL.md](TUTORIAL.md)** - Complete step-by-step guide
 - **[SOLDER.md](SOLDER.md)** - Photo guide for soldering the microcontroller and gluing the diffuser covers
 - **[alia_mic_test/](alia_mic_test/alia_mic_test.ino)** - Microphone test sketch for the sound PCB (see [Microphone Test](#microphone-test-sound-board))
+- **[alia_clapper/](alia_clapper/alia_clapper.ino)** - Clap and button controlled firmware with sound-reactive patterns for the sound PCB (see [Clapper Firmware](#clapper-firmware-sound-board))
 - **[LICENSE](LICENSE)** - MIT License
 - **In-code comments** - Extensive documentation throughout
 
