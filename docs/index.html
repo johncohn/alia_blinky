@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your own sparkly Alia</title>
+<meta name="description" content="A light-up Alia ornament that flies, sparkles and dances to music. $30, and 200% goes to Toys for Tots.">
+<meta property="og:title" content="Your own sparkly Alia">
+<meta property="og:description" content="A light-up Alia ornament. $30, and 200% goes to Toys for Tots.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg1: #1d0f33;
+    --bg2: #0e1430;
+    --card: rgba(255, 255, 255, 0.06);
+    --card-line: rgba(255, 255, 255, 0.12);
+    --text: #fff6ec;
+    --muted: #d6c6e0;
+    --gold: #ffd36b;
+    --coral: #ff7f96;
+    --mint: #7ef0c6;
+    --sky: #8fd8ff;
+    --input: rgba(10, 6, 24, 0.55);
+    --radius: 22px;
+    --display: "Fredoka", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--text);
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      radial-gradient(900px 500px at 15% 0%, rgba(255, 127, 150, 0.22), transparent 60%),
+      radial-gradient(800px 600px at 100% 100%, rgba(143, 216, 255, 0.16), transparent 60%),
+      linear-gradient(160deg, var(--bg1), var(--bg2));
+    background-attachment: fixed;
+    overflow-x: hidden;
+  }
+  a { color: var(--gold); }
+
+  /* Twinkling sparkles in the background */
+  .sky { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .sky i {
+    position: absolute; width: 3px; height: 3px; border-radius: 50%;
+    background: #fff; opacity: 0; animation: twinkle 3s ease-in-out infinite;
+  }
+  @keyframes twinkle { 0%, 100% { opacity: 0; transform: scale(0.6); } 50% { opacity: 0.9; transform: scale(1.2); } }
+  @media (prefers-reduced-motion: reduce) { .sky i { animation: none; opacity: 0.35; } }
+
+  /* Layout: phone = one column; laptop/landscape = two columns */
+  .page {
+    position: relative; z-index: 1;
+    max-width: 1120px; margin: 0 auto; padding: 24px 16px 40px;
+    display: grid; gap: 22px;
+  }
+  @media (min-width: 900px) and (orientation: landscape) {
+    .page {
+      grid-template-columns: 1.15fr 1fr; align-items: center; gap: 48px;
+      min-height: 100vh; padding: 32px 40px;
+    }
+  }
+
+  /* Hero animation */
+  .hero {
+    border-radius: var(--radius); overflow: hidden;
+    background: #07040f; border: 1px solid var(--card-line);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), 0 0 0 6px rgba(255, 211, 107, 0.06);
+  }
+  .hero img { width: 100%; height: auto; display: block; }
+  .hero .placeholder {
+    min-height: 240px; display: grid; place-content: center; text-align: center;
+    color: var(--muted); font-family: var(--display); font-size: 1.05rem;
+  }
+  .hero .placeholder span { font-size: 3rem; display: block; margin-bottom: 6px; }
+  @media (min-width: 900px) and (orientation: landscape) {
+    .hero img { max-height: 46vh; object-fit: contain; background: #07040f; }
+    .hero .placeholder { min-height: 34vh; }
+  }
+
+  h1 {
+    font-family: var(--display); font-weight: 700;
+    font-size: clamp(2.2rem, 4.2vw, 3.3rem); line-height: 1.05; letter-spacing: -0.01em;
+    margin: 18px 0 8px;
+    background: linear-gradient(90deg, var(--gold), var(--coral) 55%, var(--sky));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .tagline { color: var(--muted); font-size: 1.1rem; margin: 0 0 16px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; padding: 0; list-style: none; }
+  .chips li {
+    padding: 7px 13px; border-radius: 999px; font-size: 0.95rem;
+    background: var(--card); border: 1px solid var(--card-line);
+  }
+
+  .deal { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+  .price { font-family: var(--display); font-weight: 700; font-size: 2.6rem; line-height: 1; color: var(--gold); }
+  .price-note { color: var(--muted); font-size: 0.95rem; line-height: 1.35; }
+  .charity {
+    margin-top: 14px; padding: 12px 16px; border-radius: 16px;
+    background: linear-gradient(90deg, rgba(255, 127, 150, 0.18), rgba(255, 211, 107, 0.14));
+    border: 1px solid rgba(255, 211, 107, 0.35); font-size: 0.98rem;
+  }
+  .charity b { color: var(--gold); }
+
+  /* Sign-up card */
+  .card {
+    background: var(--card); border: 1px solid var(--card-line); border-radius: var(--radius);
+    padding: 24px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+  .card h2 { font-family: var(--display); font-weight: 600; font-size: 1.7rem; margin: 0 0 4px; }
+  .card .sub { color: var(--muted); font-size: 0.95rem; margin: 0 0 18px; }
+  .card .sub b { color: var(--text); }
+
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .row { display: grid; gap: 10px; margin-bottom: 10px; }
+  @media (min-width: 480px) { .row.two { grid-template-columns: 1fr 1fr; } }
+  input[type=text], input[type=email], input[type=tel], textarea {
+    width: 100%; padding: 13px 15px; font: inherit; color: var(--text);
+    background: var(--input); border: 1px solid var(--card-line); border-radius: 14px; outline: none;
+  }
+  input::placeholder, textarea::placeholder { color: rgba(214, 198, 224, 0.7); }
+  input:focus, textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(255, 211, 107, 0.18); }
+  textarea { min-height: 72px; resize: vertical; }
+
+  .qty-head { display: flex; justify-content: space-between; align-items: baseline; margin: 6px 0 8px; }
+  .qty-head span:first-child { font-family: var(--display); font-weight: 600; }
+  .qty-total { color: var(--gold); font-weight: 600; }
+  .qty { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 12px; }
+  .qty input { position: absolute; opacity: 0; pointer-events: none; }
+  .qty label {
+    text-align: center; padding: 10px 0; border-radius: 12px; cursor: pointer;
+    border: 1px solid var(--card-line); background: var(--input); font-family: var(--display); font-weight: 600;
+    transition: transform 0.12s ease;
+  }
+  .qty label:hover { transform: translateY(-1px); }
+  .qty input:checked + label { background: var(--gold); border-color: var(--gold); color: #2a1600; }
+  .qty input:focus-visible + label { outline: 2px solid var(--sky); outline-offset: 2px; }
+  .hp { position: absolute; left: -9999px; }
+
+  button, .btn {
+    display: block; width: 100%; padding: 15px; margin-top: 14px;
+    font-family: var(--display); font-weight: 600; font-size: 1.15rem; text-align: center; text-decoration: none;
+    border: 0; border-radius: 16px; cursor: pointer; color: #2a1600;
+    background: linear-gradient(90deg, var(--gold), #ffb36b);
+    box-shadow: 0 8px 24px rgba(255, 179, 107, 0.3);
+    transition: transform 0.12s ease;
+  }
+  button:hover, .btn:hover { transform: translateY(-1px); }
+  button:disabled { opacity: 0.6; cursor: wait; }
+  .btn.venmo { background: #3d95ce; color: #fff; box-shadow: 0 8px 24px rgba(61, 149, 206, 0.35); }
+  .error { color: #ffb0b0; font-size: 0.9rem; margin: 10px 0 0; min-height: 1.2em; }
+
+  .done { display: none; text-align: center; }
+  .done.show { display: block; }
+  .done .big { font-size: 3rem; line-height: 1; }
+  .done h2 { margin-top: 8px; }
+  .done .total { font-family: var(--display); font-size: 1.5rem; color: var(--gold); margin: 4px 0 6px; }
+  .done .muted { color: var(--muted); font-size: 0.95rem; }
+  .qr { width: 170px; height: 170px; margin: 16px auto 4px; border-radius: 14px; background: #fff; padding: 10px; display: block; }
+
+  footer { color: var(--muted); font-size: 0.9rem; text-align: center; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="sky" id="sky" aria-hidden="true"></div>
+
+<main class="page">
+  <section>
+    <div class="hero">
+      <!-- Drop your animation in as docs/alia.gif -->
+      <img src="alia.gif" alt="The sparkly Alia ornament lighting up" onerror="this.remove(); document.getElementById('heroPlaceholder').hidden = false;">
+      <div class="placeholder" id="heroPlaceholder" hidden><span>✨✈️✨</span>Animation coming soon</div>
+    </div>
+
+    <h1>Your own sparkly Alia</h1>
+    <p class="tagline">A light-up Alia ornament that flies, sparkles and dances.</p>
+
+    <ul class="chips">
+      <li>✈️ Takes off &amp; lands</li>
+      <li>👏 Clap on, clap off</li>
+      <li>🎵 Dances to music</li>
+    </ul>
+
+    <div class="deal">
+      <div class="price">$30</div>
+      <div class="price-note">Ornament + power supply<br>
+        + <a href="https://github.com/johncohn/alia_blinky" target="_blank" rel="noopener">DIY code &amp; design</a></div>
+    </div>
+    <div class="charity">🎁 <b>200% goes to Toys for Tots</b>, because every purchase is matched.</div>
+  </section>
+
+  <section class="card">
+    <form id="order" novalidate>
+      <h2>Get yours ✨</h2>
+      <p class="sub">Pick up at Beta the week of <b>Dec 14</b>. Need it mailed? Add your address below.</p>
+
+      <div class="row">
+        <label class="sr" for="name">Name</label>
+        <input id="name" name="name" type="text" autocomplete="name" placeholder="Name" required>
+      </div>
+      <div class="row two">
+        <div><label class="sr" for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="Email" required></div>
+        <div><label class="sr" for="phone">Phone</label>
+          <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="Phone" required></div>
+      </div>
+
+      <div class="qty-head"><span id="qtyLabel">How many?</span><span class="qty-total" id="qtyNote"></span></div>
+      <div class="qty" role="radiogroup" aria-labelledby="qtyLabel">
+        <input type="radio" name="quantity" id="q0" value="0"><label for="q0">0</label>
+        <input type="radio" name="quantity" id="q1" value="1" checked><label for="q1">1</label>
+        <input type="radio" name="quantity" id="q2" value="2"><label for="q2">2</label>
+        <input type="radio" name="quantity" id="q3" value="3"><label for="q3">3</label>
+        <input type="radio" name="quantity" id="q4" value="4"><label for="q4">4</label>
+        <input type="radio" name="quantity" id="q5" value="5"><label for="q5">5</label>
+      </div>
+
+      <label class="sr" for="message">Questions, comments or mailing address</label>
+      <textarea id="message" name="message" placeholder="Questions? Comments? Mailing address?"></textarea>
+      <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+      <button type="submit" id="submit">Count me in ✨</button>
+      <p class="error" id="error" role="alert"></p>
+    </form>
+
+    <div class="done" id="done" aria-live="polite">
+      <div class="big">🎉</div>
+      <h2 id="doneTitle">Yay, you're in!</h2>
+      <div id="payBlock">
+        <div class="total" id="doneTotal"></div>
+        <p class="muted">Pay now with Venmo, or pay at pickup.</p>
+        <a class="btn venmo" id="venmoBtn" href="#" target="_blank" rel="noopener">Pay with Venmo</a>
+        <img class="qr" src="venmo-qr.png" alt="Venmo QR code" onerror="this.remove()">
+      </div>
+      <p class="muted" id="doneNote">Check your inbox for a confirmation email.</p>
+    </div>
+
+    <footer>Want to build or hack your own? It's all on <a href="https://github.com/johncohn/alia_blinky" target="_blank" rel="noopener">GitHub</a>.</footer>
+  </section>
+</main>
+
+<script>
+  // ===== SETTINGS - edit these =====
+  const CONFIG = {
+    // Google Apps Script web app URL (see docs/SETUP.md). Leave empty to preview without saving.
+    SHEET_URL: "https://script.google.com/macros/s/AKfycbyxQpMxWPl3k1uMgrpfdXuI3RQ2JaVBlzeGvemjemgUBTGbVx1P4tDox5qe29wr2Hd1Sg/exec",
+    // Your Venmo username, without the @
+    VENMO_USER: "johncohnvt",
+    PRICE: 30,
+  };
+
+  // Twinkling sparkles
+  (function makeSky() {
+    const sky = document.getElementById("sky");
+    const colors = ["#ffffff", "#ffd36b", "#ff7f96", "#8fd8ff", "#7ef0c6"];
+    for (let i = 0; i < 60; i++) {
+      const s = document.createElement("i");
+      const c = colors[i % colors.length];
+      s.style.left = Math.random() * 100 + "%";
+      s.style.top = Math.random() * 100 + "%";
+      s.style.background = c;
+      s.style.boxShadow = `0 0 8px 2px ${c}`;
+      s.style.animationDelay = (Math.random() * 3).toFixed(2) + "s";
+      s.style.animationDuration = (2 + Math.random() * 3).toFixed(2) + "s";
+      sky.appendChild(s);
+    }
+  })();
+
+  const form = document.getElementById("order");
+  const qtyNote = document.getElementById("qtyNote");
+  const errorEl = document.getElementById("error");
+
+  function qty() {
+    return parseInt(form.querySelector('input[name="quantity"]:checked').value, 10);
+  }
+  function updateQtyNote() {
+    const q = qty();
+    qtyNote.textContent = q === 0 ? "Just a question" : `$${q * CONFIG.PRICE}`;
+  }
+  form.addEventListener("change", updateQtyNote);
+  updateQtyNote();
+
+  function venmoLink(amount) {
+    const p = new URLSearchParams({
+      txn: "pay", audience: "private", recipients: CONFIG.VENMO_USER,
+      amount: String(amount), note: "Sparkly Alia",
+    });
+    return `https://venmo.com/?${p}`;
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorEl.textContent = "";
+    const data = new FormData(form);
+    const name = data.get("name").trim(), email = data.get("email").trim(), phone = data.get("phone").trim();
+    const q = qty(), message = data.get("message").trim();
+
+    if (!name || !email || !phone) return errorEl.textContent = "Please add your name, email and phone.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return errorEl.textContent = "That email doesn't look quite right.";
+    if (q === 0 && !message) return errorEl.textContent = "Add a message, or pick how many you'd like.";
+
+    const btn = document.getElementById("submit");
+    btn.disabled = true; btn.textContent = "Sending…";
+    try {
+      if (CONFIG.SHEET_URL) {
+        // Apps Script doesn't return CORS headers we can read, so send and trust delivery.
+        await fetch(CONFIG.SHEET_URL, { method: "POST", mode: "no-cors", body: new URLSearchParams(data) });
+      } else {
+        console.warn("SHEET_URL not set - preview only, nothing was saved.", Object.fromEntries(data));
+      }
+      showDone(q);
+    } catch (err) {
+      errorEl.textContent = "Couldn't send. Check your connection and try again.";
+      btn.disabled = false; btn.textContent = "Count me in ✨";
+    }
+  });
+
+  function showDone(q) {
+    form.hidden = true;
+    if (q === 0) {
+      document.getElementById("doneTitle").textContent = "Thanks for your message!";
+      document.getElementById("payBlock").hidden = true;
+      document.getElementById("doneNote").textContent = "We'll get back to you by email.";
+    } else {
+      const total = q * CONFIG.PRICE;
+      document.getElementById("doneTotal").textContent = `${q} sparkly Alia${q > 1 ? "s" : ""} · $${total}`;
+      document.getElementById("venmoBtn").href = venmoLink(total);
+    }
+    const done = document.getElementById("done");
+    done.classList.add("show");
+    done.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+</script>
+</body>
+</html>
