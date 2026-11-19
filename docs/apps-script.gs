@@ -85,7 +85,7 @@ function sendConfirmation_(name, email, qty, total) {
       <p><a href="${venmo}" style="display:inline-block;background:#3d95ce;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:bold">Pay $${total} with Venmo</a></p>
       <p>Or scan this with your phone (Venmo @${esc_(VENMO_USER)}):<br>
         <img src="${PAGE_URL}venmo-qr.png" alt="Venmo QR code" width="180" height="180" style="margin-top:8px"></p>
-      <p style="font-size:17px">🎁 <b>Every dollar goes to Toys for Tots, doubled!</b> Every purchase is matched, so your $${total} becomes <b>$${total * 2} for kids</b>. Thank you!</p>
+      <p style="font-size:17px">🎁 <b>Every dollar goes to Toys for Tots!</b> Every purchase is matched, so your $${total} becomes <b>$${total * 2} for kids</b>. Thank you!</p>
       ${contactBlock_()}`;
   } else {
     subject = 'Thanks for your message about the sparkly Alia ✨';
