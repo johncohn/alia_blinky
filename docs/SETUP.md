@@ -45,14 +45,14 @@ If you change the script later, use **Deploy → Manage deployments → Edit →
 
 ## 4. The video
 
-The page plays **`docs/alia.mp4`**, a short silent looping video, with **`docs/alia-poster.jpg`** shown while it loads. To swap in a new phone video (`.mov`), shrink it with:
+The page plays **`docs/alia.mp4`** (made from a phone video, rotated so the planes point up), a short silent looping video, with **`docs/alia-poster.jpg`** shown while it loads. To swap in a new phone video (`.mov`), shrink it with:
 
 ```
 ffmpeg -i NEW.mov -an -vf "scale=720:-2,format=yuv420p" -c:v libx264 -crf 27 -movflags +faststart docs/alia.mp4
 ffmpeg -ss 1 -i docs/alia.mp4 -frames:v 1 docs/alia-poster.jpg
 ```
 
-If the new video isn't 1138×848, change the `aspect-ratio` on `.hero video` in `index.html` to match. Keep it under about 3 MB so it loads quickly on phones.
+If the new video isn't 960×584, change the `aspect-ratio` on `.hero video` in `index.html` to match. Keep it under about 3 MB so it loads quickly on phones.
 
 ## 5. Turn on GitHub Pages
 

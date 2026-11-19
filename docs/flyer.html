@@ -36,8 +36,12 @@
   h1 .a { color: #f0a400; } h1 .b { color: #ff5f86; } h1 .c { color: #3aa7e8; }
   .tagline { font-size: 21px; color: var(--muted); margin: 8px 0 18px; }
 
+  .photo-wrap { position: relative; }
+  .look { position: absolute; bottom: 14px; padding: 4px 11px; border-radius: 999px; font-size: 15px; font-weight: 600;
+    background: rgba(20, 10, 30, 0.72); color: #fff; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+  .look.l { left: 14px; } .look.r { right: 14px; }
   .photo {
-    width: 100%; height: 5in; object-fit: cover; object-position: center 45%; border-radius: 22px; display: block;
+    width: 100%; height: 4.45in; object-fit: cover; border-radius: 22px; display: block;
     box-shadow: 0 8px 24px rgba(42, 24, 56, 0.25);
   }
 
@@ -86,7 +90,10 @@
   <h1><span class="a">Your own</span> <span class="b">sparkly</span> <span class="c">Alia</span></h1>
   <p class="tagline">A light-up Alia ornament that flies, sparkles and dances.</p>
 
-  <img class="photo" src="flyer-photo.jpg" alt="The sparkly Alia ornament lit up in rainbow colors">
+  <div class="photo-wrap">
+    <img class="photo" src="flyer-photo.jpg" alt="Two sparkly Alia ornaments lit up, one with diffusers and one without">
+    <span class="look l">With diffuser</span><span class="look r">Without</span>
+  </div>
 
   <ul class="features">
     <li>✈️ Takes off &amp; lands</li>
@@ -98,7 +105,7 @@
     <div>
       <div class="deal">
         <div class="price">$30</div>
-        <div class="price-note">Ornament + power supply<br>+ DIY code &amp; design, all on GitHub<br>With or without a diffuser</div>
+        <div class="price-note">Ornament + power supply<br>+ DIY code &amp; design, all on GitHub<br><b>Available with or without diffusers</b></div>
       </div>
       <p class="pickup">📦 Pick up at Beta the week of <b>Dec 14</b>, or we'll mail it to you.</p>
       <div class="charity">

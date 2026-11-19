@@ -70,7 +70,11 @@
     background: #07040f; border: 1px solid var(--card-line);
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), 0 0 0 6px rgba(255, 211, 107, 0.06);
   }
-  .hero video { width: 100%; height: auto; aspect-ratio: 1138 / 848; display: block; object-fit: cover; }
+  .hero { position: relative; }
+  .hero video { width: 100%; height: auto; aspect-ratio: 960 / 584; display: block; object-fit: cover; }
+  .look { position: absolute; bottom: 10px; padding: 4px 11px; border-radius: 999px; font-size: 0.85rem; font-weight: 600;
+    background: rgba(20, 10, 30, 0.72); color: #fff; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+  .look.l { left: 10px; } .look.r { right: 10px; }
   @media (min-width: 900px) and (orientation: landscape) {
     .hero video { max-height: 46vh; object-fit: contain; background: #07040f; }
   }
@@ -185,7 +189,8 @@
   <section>
     <div class="hero">
       <!-- docs/alia.mp4: short silent loop (muted + playsinline so phones autoplay it) -->
-      <video src="alia.mp4" poster="alia-poster.jpg" autoplay muted loop playsinline aria-label="The sparkly Alia ornament lighting up"></video>
+      <video src="alia.mp4" poster="alia-poster.jpg" autoplay muted loop playsinline aria-label="Two sparkly Alia ornaments lighting up, one with diffusers and one without"></video>
+      <span class="look l">With diffuser</span><span class="look r">Without</span>
     </div>
 
     <h1>Your own sparkly Alia</h1>
