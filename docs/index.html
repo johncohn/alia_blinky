@@ -146,6 +146,8 @@
   button:hover, .btn:hover { transform: translateY(-1px); }
   button:disabled { opacity: 0.6; cursor: wait; }
   .btn.venmo { background: #3d95ce; color: #fff; box-shadow: 0 8px 24px rgba(61, 149, 206, 0.35); }
+  .done .note { font-size: 1.1rem; line-height: 1.45; margin: 18px 0 6px; }
+  .done .small { font-size: 0.85rem; margin-top: 0; }
   .btn.later { background: transparent; color: var(--text, #fff); border: 1.5px solid var(--card-line); box-shadow: none; }
   .error { color: #ffb0b0; font-size: 0.9rem; margin: 10px 0 0; min-height: 1.2em; }
 
@@ -157,7 +159,6 @@
   .done .muted { color: var(--muted); font-size: 0.95rem; }
   .qr { width: 170px; height: 170px; margin: 16px auto 4px; border-radius: 14px; background: #fff; padding: 10px; display: block; }
 
-  footer { color: var(--muted); font-size: 0.9rem; text-align: center; margin-top: 16px; }
 </style>
 </head>
 <body>
@@ -182,7 +183,7 @@
     <div class="deal">
       <div class="price">$30</div>
       <div class="price-note">Ornament + power supply<br>
-        + <a href="https://github.com/johncohn/alia_blinky" target="_blank" rel="noopener">DIY code &amp; design</a></div>
+        + DIY code &amp; design, all on <a href="https://github.com/johncohn/alia_blinky" target="_blank" rel="noopener">GitHub</a></div>
     </div>
     <div class="charity">🎁 <b>200% goes to Toys for Tots</b>, because every purchase is matched.</div>
   </section>
@@ -226,18 +227,19 @@
       <h2 id="doneTitle">Yay, you're in!</h2>
       <div id="payBlock">
         <div class="total" id="doneTotal"></div>
-        <p class="muted">Pay now with Venmo, or pay at pickup.</p>
         <div id="payChoice">
-          <a class="btn venmo" id="venmoBtn" href="#" target="_blank" rel="noopener">Pay now with Venmo</a>
-          <button type="button" class="btn later" id="laterBtn">Pay on delivery</button>
+          <div id="payButtons">
+            <a class="btn venmo" id="venmoBtn" href="#" target="_blank" rel="noopener">Pay now with Venmo</a>
+            <button type="button" class="btn later" id="laterBtn">Pay on delivery</button>
+          </div>
+          <p class="note" id="paidNote" hidden>💙 <b>Thank you for paying!</b><br>We'll email you once it comes through.</p>
           <img class="qr" src="venmo-qr.png" alt="Venmo QR code" onerror="this.remove()">
+          <p class="muted small" id="qrCaption">Or scan with your phone to pay</p>
         </div>
-        <p class="muted" id="laterNote" hidden>👍 No problem, pay when you get your Alia.</p>
+        <p class="note" id="laterNote" hidden>👍 <b>No problem!</b><br>Just pay when you get your Alia.</p>
       </div>
-      <p class="muted" id="doneNote">Check your inbox for a confirmation email.</p>
+      <p class="muted" id="doneNote">A confirmation email is on its way.</p>
     </div>
-
-    <footer>Want to build or hack your own? It's all on <a href="https://github.com/johncohn/alia_blinky" target="_blank" rel="noopener">GitHub</a>.</footer>
   </section>
 </main>
 
@@ -291,9 +293,14 @@
     }).toString().replace(/\+/g, "%20");
     return isPhone ? `venmo://paycharge?${p}` : `https://account.venmo.com/pay?${p}`;
   }
+  // After they pick: thank them (Venmo) or remind them to pay later (delivery).
+  // The Venmo QR stays visible after the Venmo button in case the app didn't open.
+  const show = (id, on = true) => { document.getElementById(id).hidden = !on; };
+  document.getElementById("venmoBtn").addEventListener("click", () => {
+    setTimeout(() => { show("payButtons", false); show("paidNote"); show("qrCaption", false); }, 300);
+  });
   document.getElementById("laterBtn").addEventListener("click", () => {
-    document.getElementById("payChoice").hidden = true;
-    document.getElementById("laterNote").hidden = false;
+    show("payChoice", false); show("laterNote");
   });
 
   form.addEventListener("submit", async (e) => {
