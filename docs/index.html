@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Your own sparkly Alia</title>
-<meta name="description" content="A light-up Alia ornament that flies, sparkles and dances to music. $30, and 200% goes to Toys for Tots.">
+<meta name="description" content="A light-up Alia ornament that flies, sparkles and dances to music. $30, and every dollar goes to Toys for Tots, doubled.">
 <meta property="og:title" content="Your own sparkly Alia">
-<meta property="og:description" content="A light-up Alia ornament. $30, and 200% goes to Toys for Tots.">
+<meta property="og:description" content="A light-up Alia ornament. $30, and every dollar goes to Toys for Tots, doubled.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
@@ -94,11 +94,17 @@
   .price { font-family: var(--display); font-weight: 700; font-size: 2.6rem; line-height: 1; color: var(--gold); }
   .price-note { color: var(--muted); font-size: 0.95rem; line-height: 1.35; }
   .charity {
-    margin-top: 14px; padding: 12px 16px; border-radius: 16px;
-    background: linear-gradient(90deg, rgba(255, 127, 150, 0.18), rgba(255, 211, 107, 0.14));
-    border: 1px solid rgba(255, 211, 107, 0.35); font-size: 0.98rem;
+    display: flex; gap: 14px; align-items: center;
+    margin: 0 0 18px; padding: 16px 18px; border-radius: 18px;
+    background: linear-gradient(100deg, rgba(255, 127, 150, 0.32), rgba(255, 211, 107, 0.24));
+    border: 1.5px solid rgba(255, 211, 107, 0.6);
+    box-shadow: 0 10px 30px rgba(255, 127, 150, 0.18);
   }
-  .charity b { color: var(--gold); }
+  .charity-icon { font-size: 2.4rem; line-height: 1; }
+  .charity-head { font-family: var(--display); font-weight: 700; font-size: 1.35rem; line-height: 1.2; }
+  .charity-head span { color: var(--gold); }
+  .charity-sub { margin-top: 4px; font-size: 0.95rem; line-height: 1.4; color: var(--text); opacity: 0.9; }
+  .charity-sub b { color: var(--gold); }
 
   /* Sign-up card */
   .card {
@@ -174,6 +180,14 @@
     <h1>Your own sparkly Alia</h1>
     <p class="tagline">A light-up Alia ornament that flies, sparkles and dances.</p>
 
+    <div class="charity">
+      <div class="charity-icon">🎁</div>
+      <div>
+        <div class="charity-head">Every dollar goes to Toys for Tots, <span>doubled!</span></div>
+        <div class="charity-sub">100% of the proceeds go to Toys for Tots, and every purchase is matched. Your $30 becomes <b>$60 for kids</b>.</div>
+      </div>
+    </div>
+
     <ul class="chips">
       <li>✈️ Takes off &amp; lands</li>
       <li>👏 Clap on, clap off</li>
@@ -185,7 +199,6 @@
       <div class="price-note">Ornament + power supply<br>
         + DIY code &amp; design, all on <a href="https://github.com/johncohn/alia_blinky" target="_blank" rel="noopener">GitHub</a></div>
     </div>
-    <div class="charity">🎁 <b>200% goes to Toys for Tots</b>, because every purchase is matched.</div>
   </section>
 
   <section class="card">
