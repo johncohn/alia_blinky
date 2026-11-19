@@ -1,7 +1,7 @@
 # "Your own sparkly Alia" Sign-Up Page: Setup
 
 `docs/index.html` is a one-page site for the ornament, served by GitHub Pages at
-**https://johncohn.github.io/alia_blinky/**. `docs/qr_ornament_page.png` is a QR code for that address.
+**https://johncohn.github.io/alia_blinky/**. `docs/qr_ornament_page.png` is a QR code for that address. **`docs/flyer.html`** (https://johncohn.github.io/alia_blinky/flyer.html) is a one-page printable flyer with a QR code to the sign-up page: open it and press ⌘P.
 
 ## Where sign-ups go
 
@@ -34,7 +34,7 @@ If you change the script later, use **Deploy → Manage deployments → Edit →
 
 ## 2. Day to day
 
-- New sign-ups appear as rows on the **Signups** tab.
+- New sign-ups appear as rows on the **Signups** tab. The **Diffusers** column (last) says how many of that order should have a diffuser.
 - When someone's Venmo payment arrives, tick **Paid?** on their row. They get a payment confirmation, and the time it was sent appears in **Paid email sent**. It's only ever sent once per row.
 - If someone pays at pickup, tick **Paid?** then too, if you'd like them to get the email.
 - Gmail lets a script send about **100 emails a day** on a personal account. That's plenty here, but worth knowing.

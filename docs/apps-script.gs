@@ -27,8 +27,9 @@ const NOTIFY_OWNER = true;                   // Email you about every sign-up
 
 // ===== SHEET LAYOUT =====
 const SHEET_NAME = 'Signups';
-const HEADERS = ['Timestamp', 'Name', 'Email', 'Phone', 'Quantity', 'Total ($)', 'Message', 'Paid?', 'Paid email sent'];
-const COL = { name: 2, email: 3, qty: 5, total: 6, paid: 8, paidSent: 9 };
+// "Diffusers" is last so sheets made before it was added keep working.
+const HEADERS = ['Timestamp', 'Name', 'Email', 'Phone', 'Quantity', 'Total ($)', 'Message', 'Paid?', 'Paid email sent', 'Diffusers'];
+const COL = { name: 2, email: 3, qty: 5, total: 6, paid: 8, paidSent: 9, diff: 10 };
 
 // ---------------------------------------------------------------------------
 // Form submissions from the page
@@ -43,8 +44,9 @@ function doPost(e) {
   try {
     const sheet = getSheet_();
     const qty = Math.max(0, Math.min(5, parseInt(p.quantity, 10) || 0));
+    const diff = Math.max(0, Math.min(qty, parseInt(p.diffusers, 10) || 0));
     row = [new Date(), clean_(p.name), clean_(p.email), clean_(p.phone),
-           qty, qty * PRICE, clean_(p.message), false, ''];
+           qty, qty * PRICE, clean_(p.message), false, '', diff];
     sheet.appendRow(row);
     const r = sheet.getLastRow();
     if (qty > 0) sheet.getRange(r, COL.paid).insertCheckboxes();
@@ -52,16 +54,16 @@ function doPost(e) {
     lock.releaseLock();
   }
 
-  const [, name, email, phone, qty, total, message] = row;
+  const [, name, email, phone, qty, total, message, , , diff] = row;
   try {
-    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) sendConfirmation_(name, email, qty, total);
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) sendConfirmation_(name, email, qty, total, diff);
   } catch (err) {
     console.error('Confirmation email failed: ' + err);
   }
   if (NOTIFY_OWNER) {
     const subject = qty > 0 ? `Sparkly Alia: ${qty} for ${name} ($${total})` : `Sparkly Alia question from ${name}`;
     MailApp.sendEmail(Session.getEffectiveUser().getEmail(), subject,
-      `Name: ${name}\nEmail: ${email}\nPhone: ${phone}\nQuantity: ${qty}\nTotal: $${total}\n\nMessage:\n${message || '(none)'}`);
+      `Name: ${name}\nEmail: ${email}\nPhone: ${phone}\nQuantity: ${qty}\nWith diffuser: ${diff} of ${qty}\nTotal: $${total}\n\nMessage:\n${message || '(none)'}`);
   }
   return reply_();
 }
@@ -69,7 +71,7 @@ function doPost(e) {
 // ---------------------------------------------------------------------------
 // Emails
 // ---------------------------------------------------------------------------
-function sendConfirmation_(name, email, qty, total) {
+function sendConfirmation_(name, email, qty, total, diff) {
   const first = esc_(String(name).split(' ')[0] || 'there');
   let subject, body;
   if (qty > 0) {
@@ -78,7 +80,7 @@ function sendConfirmation_(name, email, qty, total) {
     body = `
       <p>Hi ${first},</p>
       <p>Thanks for signing up! Here's your order:</p>
-      <p style="font-size:18px"><b>${qty} × sparkly Alia · $${total}</b></p>
+      <p style="font-size:18px"><b>${qty} × sparkly Alia${diffText_(qty, diff)} · $${total}</b></p>
       <p>${esc_(PICKUP_TEXT)}</p>
       <h3 style="margin-bottom:4px">Paying</h3>
       <p style="margin-top:0">You can <b>pay now</b> with Venmo, or <b>pay when your Alia is delivered</b>, whichever you like.</p>
@@ -105,6 +107,12 @@ function sendPaymentConfirmation_(name, email, qty, total) {
     <p>${esc_(PICKUP_TEXT)}</p>
     <p>🎁 Your purchase is matched, so <b>$${total * 2}</b> goes to Toys for Tots.</p>
     ${contactBlock_()}`);
+}
+
+function diffText_(qty, diff) {
+  if (!diff) return '';
+  if (diff >= qty) return qty === 1 ? ' with diffuser' : ' (all with diffusers)';
+  return ` (${diff} with diffuser${diff > 1 ? 's' : ''})`;
 }
 
 function contactBlock_() {
@@ -173,8 +181,12 @@ function getSheet_() {
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(HEADERS);
     sheet.setFrozenRows(1);
-    sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold');
   }
+  // Adds any new header (like "Diffusers") to a sheet made by an older version
+  if (sheet.getRange(1, HEADERS.length).getValue() !== HEADERS[HEADERS.length - 1]) {
+    sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+  }
+  sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold');
   return sheet;
 }
 

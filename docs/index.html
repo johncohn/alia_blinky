@@ -140,6 +140,17 @@
   .qty input:checked + label { background: var(--gold); border-color: var(--gold); color: #2a1600; }
   .qty input:focus-visible + label { outline: 2px solid var(--sky); outline-offset: 2px; }
   .hp { position: absolute; left: -9999px; }
+  [hidden] { display: none !important; }
+
+  .diff { margin: 0 0 12px; padding: 12px 14px; border-radius: 14px; background: var(--input); border: 1px solid var(--card-line); }
+  .diff .check { display: flex; gap: 10px; align-items: center; cursor: pointer; font-size: 0.98rem; }
+  .diff .check input { width: 20px; height: 20px; accent-color: var(--gold); flex: none; }
+  .diff .muted { color: var(--muted); }
+  .diff-count { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px; font-size: 0.95rem; }
+  .diff-count select {
+    font: inherit; font-weight: 600; color: var(--text); background: var(--card); padding: 6px 10px;
+    border: 1px solid var(--card-line); border-radius: 10px;
+  }
 
   button, .btn {
     display: block; width: 100%; padding: 15px; margin-top: 14px;
@@ -227,6 +238,16 @@
         <input type="radio" name="quantity" id="q5" value="5"><label for="q5">5</label>
       </div>
 
+      <div class="diff" id="diffBox">
+        <label class="check"><input type="checkbox" id="diffOn">
+          <span><b>With diffuser</b> <span class="muted">· same price, just a different look</span></span></label>
+        <div class="diff-count" id="diffCountRow" hidden>
+          <label for="diffCount">How many with a diffuser?</label>
+          <select id="diffCount"></select>
+        </div>
+        <input type="hidden" name="diffusers" id="diffusers" value="0">
+      </div>
+
       <label class="sr" for="message">Questions, comments or mailing address</label>
       <textarea id="message" name="message" placeholder="Questions? Comments? Mailing address?"></textarea>
       <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -290,13 +311,32 @@
   function qty() {
     return parseInt(form.querySelector('input[name="quantity"]:checked').value, 10);
   }
+  // Diffuser: one checkbox. With more than one Alia, they can also pick how many get one.
+  const diffOn = document.getElementById("diffOn"), diffCount = document.getElementById("diffCount");
+  function updateDiffuser() {
+    const q = qty();
+    show("diffBox", q > 0);
+    show("diffCountRow", diffOn.checked && q > 1);
+    const keep = parseInt(diffCount.value, 10);
+    if (diffCount.options.length !== q) {
+      diffCount.innerHTML = "";
+      for (let n = 1; n <= q; n++) diffCount.add(new Option(n === q && q > 1 ? `All ${n}` : String(n), n));
+      diffCount.value = keep && keep < q ? keep : q;  // default: all of them
+    }
+    const d = !diffOn.checked || q === 0 ? 0 : q === 1 ? 1 : parseInt(diffCount.value, 10);
+    document.getElementById("diffusers").value = d;
+    return d;
+  }
+  function diffText(q, d) {
+    if (!d) return "";
+    if (d === q) return q === 1 ? " with diffuser" : " · all with diffusers";
+    return ` · ${d} with diffuser${d > 1 ? "s" : ""}`;
+  }
   function updateQtyNote() {
     const q = qty();
     qtyNote.textContent = q === 0 ? "Just a question" : `$${q * CONFIG.PRICE}`;
+    updateDiffuser();
   }
-  form.addEventListener("change", updateQtyNote);
-  updateQtyNote();
-
   // Phones: open the Venmo app straight to a payment to you with the amount filled in.
   // Laptops: open Venmo's website payment page, also pre-filled.
   const isPhone = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -316,12 +356,16 @@
     show("payChoice", false); show("laterNote");
   });
 
+  form.addEventListener("change", updateQtyNote);
+  updateQtyNote();
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     errorEl.textContent = "";
     const data = new FormData(form);
     const name = data.get("name").trim(), email = data.get("email").trim(), phone = data.get("phone").trim();
     const q = qty(), message = data.get("message").trim();
+    data.set("diffusers", updateDiffuser());
 
     if (!name || !email || !phone) return errorEl.textContent = "Please add your name, email and phone.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return errorEl.textContent = "That email doesn't look quite right.";
@@ -336,14 +380,14 @@
       } else {
         console.warn("SHEET_URL not set - preview only, nothing was saved.", Object.fromEntries(data));
       }
-      showDone(q);
+      showDone(q, parseInt(data.get("diffusers"), 10));
     } catch (err) {
       errorEl.textContent = "Couldn't send. Check your connection and try again.";
       btn.disabled = false; btn.textContent = "Count me in ✨";
     }
   });
 
-  function showDone(q) {
+  function showDone(q, d) {
     form.hidden = true;
     if (q === 0) {
       document.getElementById("doneTitle").textContent = "Thanks for your message!";
@@ -351,7 +395,7 @@
       document.getElementById("doneNote").textContent = "We'll get back to you by email.";
     } else {
       const total = q * CONFIG.PRICE;
-      document.getElementById("doneTotal").textContent = `${q} sparkly Alia${q > 1 ? "s" : ""} · $${total}`;
+      document.getElementById("doneTotal").textContent = `${q} sparkly Alia${q > 1 ? "s" : ""}${diffText(q, d)} · $${total}`;
       const venmoBtn = document.getElementById("venmoBtn");
       venmoBtn.href = venmoLink(total);
       if (isPhone) venmoBtn.removeAttribute("target");  // let the app link open the Venmo app

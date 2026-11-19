@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sparkly Alia Flyer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* One US Letter page. Open in a browser and print (⌘P). */
+  @page { size: letter; margin: 0; }
+  :root {
+    --ink: #2a1838; --muted: #6b5878; --gold: #e8a21a; --pink: #ff5f86; --sky: #3aa7e8;
+    --display: "Fredoka", "Avenir Next", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; background: #e9e4ee; color: var(--ink); font: 16px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+
+  .sheet {
+    width: 8.5in; height: 11in; margin: 24px auto; padding: 0.55in 0.6in;
+    background: #fff; position: relative; overflow: hidden;
+    display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  }
+  /* Soft sparkly glow in the corners */
+  .sheet::before, .sheet::after {
+    content: ""; position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.35; z-index: 0;
+  }
+  .sheet::before { width: 4in; height: 4in; background: #ff9fb6; top: -1.4in; right: -1.2in; }
+  .sheet::after { width: 4in; height: 4in; background: #9fd6ff; bottom: -1.6in; left: -1.4in; }
+  .sheet > * { position: relative; z-index: 1; }
+
+  h1 {
+    font-family: var(--display); font-weight: 700; font-size: 54px; line-height: 1.02; margin: 0;
+  }
+  h1 .a { color: #f0a400; } h1 .b { color: #ff5f86; } h1 .c { color: #3aa7e8; }
+  .tagline { font-size: 21px; color: var(--muted); margin: 8px 0 18px; }
+
+  .photo {
+    width: 100%; height: 5in; object-fit: cover; object-position: center 45%; border-radius: 22px; display: block;
+    box-shadow: 0 8px 24px rgba(42, 24, 56, 0.25);
+  }
+
+  .features { display: flex; gap: 10px; margin: 18px 0 0; padding: 0; list-style: none; }
+  .features li {
+    flex: 1; text-align: center; padding: 10px 6px; border-radius: 14px;
+    background: #f6f1fa; border: 1px solid #e6dcef; font-weight: 600; font-size: 16px;
+  }
+
+  .bottom { display: grid; grid-template-columns: 1fr 2.55in; gap: 0.35in; margin-top: 20px; align-items: start; }
+  .deal { display: flex; gap: 14px; align-items: center; }
+  .price { font-family: var(--display); font-weight: 700; font-size: 56px; line-height: 1; color: var(--gold); }
+  .price-note { color: var(--muted); font-size: 15.5px; line-height: 1.4; }
+  .pickup { margin: 14px 0 0; font-size: 16px; }
+
+  .charity {
+    display: flex; gap: 12px; align-items: center; margin-top: 16px; padding: 14px 16px; border-radius: 16px;
+    background: linear-gradient(100deg, #ffe3ea, #fff1cf); border: 2px solid #f6c35a;
+  }
+  .charity-icon { font-size: 38px; line-height: 1; }
+  .charity-head { font-family: var(--display); font-weight: 700; font-size: 21px; line-height: 1.2; }
+  .charity-sub { font-size: 14.5px; line-height: 1.4; margin-top: 3px; }
+  .charity-sub b { color: #c4580f; }
+
+  .scan {
+    text-align: center; padding: 16px 16px 12px; border-radius: 20px; background: #fff;
+    border: 3px solid var(--ink);
+  }
+  .scan-head { font-family: var(--display); font-weight: 700; font-size: 26px; line-height: 1.1; margin-bottom: 10px; }
+  .scan img { width: 100%; display: block; }
+  .scan-url { font-size: 11.5px; color: var(--muted); margin-top: 8px; word-break: break-all; }
+
+  .print-btn {
+    display: block; margin: 0 auto 24px; padding: 12px 22px; font: 600 16px var(--display);
+    border: 0; border-radius: 12px; background: var(--ink); color: #fff; cursor: pointer;
+  }
+  @media print {
+    html, body { background: #fff; }
+    .sheet { margin: 0; box-shadow: none; }
+    .print-btn { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1><span class="a">Your own</span> <span class="b">sparkly</span> <span class="c">Alia</span></h1>
+  <p class="tagline">A light-up Alia ornament that flies, sparkles and dances.</p>
+
+  <img class="photo" src="flyer-photo.jpg" alt="The sparkly Alia ornament lit up in rainbow colors">
+
+  <ul class="features">
+    <li>✈️ Takes off &amp; lands</li>
+    <li>👏 Clap on, clap off</li>
+    <li>🎵 Dances to music</li>
+  </ul>
+
+  <div class="bottom">
+    <div>
+      <div class="deal">
+        <div class="price">$30</div>
+        <div class="price-note">Ornament + power supply<br>+ DIY code &amp; design, all on GitHub<br>With or without a diffuser</div>
+      </div>
+      <p class="pickup">📦 Pick up at Beta the week of <b>Dec 14</b>, or we'll mail it to you.</p>
+      <div class="charity">
+        <div class="charity-icon">🎁</div>
+        <div>
+          <div class="charity-head">Every dollar goes to Toys for Tots!</div>
+          <div class="charity-sub">100% of the proceeds go to Toys for Tots, and every purchase is matched. Your $30 becomes <b>$60 for kids</b>.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scan">
+      <div class="scan-head">Scan to order ✨</div>
+      <img src="qr-signup.svg" alt="QR code for the sign-up page">
+      <div class="scan-url">johncohn.github.io/alia_blinky</div>
+    </div>
+  </div>
+</div>
+<button class="print-btn" onclick="window.print()">🖨️ Print this flyer</button>
+</body>
+</html>
