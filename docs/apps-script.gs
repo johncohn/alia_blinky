@@ -27,9 +27,9 @@ const NOTIFY_OWNER = true;                   // Email you about every sign-up
 
 // ===== SHEET LAYOUT =====
 const SHEET_NAME = 'Signups';
-// "Diffusers" is last so sheets made before it was added keep working.
-const HEADERS = ['Timestamp', 'Name', 'Email', 'Phone', 'Quantity', 'Total ($)', 'Message', 'Paid?', 'Paid email sent', 'Diffusers'];
-const COL = { name: 2, email: 3, qty: 5, total: 6, paid: 8, paidSent: 9, diff: 10 };
+// New columns go at the end so sheets made by older versions keep working.
+const HEADERS = ['Timestamp', 'Name', 'Email', 'Phone', 'Quantity', 'Total ($)', 'Message', 'Paid?', 'Paid email sent', 'Diffusers', 'Pays by'];
+const COL = { name: 2, email: 3, qty: 5, total: 6, paid: 8, paidSent: 9, diff: 10, pays: 11 };
 
 // ---------------------------------------------------------------------------
 // Form submissions from the page
@@ -45,8 +45,9 @@ function doPost(e) {
     const sheet = getSheet_();
     const qty = Math.max(0, Math.min(5, parseInt(p.quantity, 10) || 0));
     const diff = Math.max(0, Math.min(qty, parseInt(p.diffusers, 10) || 0));
+    const pays = qty === 0 ? '' : p.pay === 'venmo' ? 'Venmo (now)' : 'At pickup';
     row = [new Date(), clean_(p.name), clean_(p.email), clean_(p.phone),
-           qty, qty * PRICE, clean_(p.message), false, '', diff];
+           qty, qty * PRICE, clean_(p.message), false, '', diff, pays];
     sheet.appendRow(row);
     const r = sheet.getLastRow();
     if (qty > 0) sheet.getRange(r, COL.paid).insertCheckboxes();
@@ -54,16 +55,16 @@ function doPost(e) {
     lock.releaseLock();
   }
 
-  const [, name, email, phone, qty, total, message, , , diff] = row;
+  const [, name, email, phone, qty, total, message, , , diff, pays] = row;
   try {
-    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) sendConfirmation_(name, email, qty, total, diff);
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) sendConfirmation_(name, email, qty, total, diff, pays);
   } catch (err) {
     console.error('Confirmation email failed: ' + err);
   }
   if (NOTIFY_OWNER) {
     const subject = qty > 0 ? `Sparkly Alia: ${qty} for ${name} ($${total})` : `Sparkly Alia question from ${name}`;
     MailApp.sendEmail(Session.getEffectiveUser().getEmail(), subject,
-      `Name: ${name}\nEmail: ${email}\nPhone: ${phone}\nQuantity: ${qty}\nWith diffuser: ${diff} of ${qty}\nTotal: $${total}\n\nMessage:\n${message || '(none)'}`);
+      `Name: ${name}\nEmail: ${email}\nPhone: ${phone}\nQuantity: ${qty}\nWith diffuser: ${diff} of ${qty}\nTotal: $${total}\nPays by: ${pays}\n\nMessage:\n${message || '(none)'}`);
   }
   return reply_();
 }
@@ -71,7 +72,7 @@ function doPost(e) {
 // ---------------------------------------------------------------------------
 // Emails
 // ---------------------------------------------------------------------------
-function sendConfirmation_(name, email, qty, total, diff) {
+function sendConfirmation_(name, email, qty, total, diff, pays) {
   const first = esc_(String(name).split(' ')[0] || 'there');
   let subject, body;
   if (qty > 0) {
@@ -83,7 +84,9 @@ function sendConfirmation_(name, email, qty, total, diff) {
       <p style="font-size:18px"><b>${qty} × sparkly Alia${diffText_(qty, diff)} · $${total}</b></p>
       <p>${esc_(PICKUP_TEXT)}</p>
       <h3 style="margin-bottom:4px">Paying</h3>
-      <p style="margin-top:0">You can <b>pay now</b> with Venmo, or <b>pay when your Alia is delivered</b>, whichever you like.</p>
+      ${pays === 'Venmo (now)'
+        ? `<p style="margin-top:0">💙 <b>Thanks for paying with Venmo!</b> We'll send you a note once your payment comes through. If it didn't go through, you can use the button below.</p>`
+        : `<p style="margin-top:0">✅ You'll <b>pay at pickup</b>. If you'd rather pay now, you can use Venmo anytime:</p>`}
       <p><a href="${venmo}" style="display:inline-block;background:#3d95ce;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:bold">Pay $${total} with Venmo</a></p>
       <p>Or scan this with your phone (Venmo @${esc_(VENMO_USER)}):<br>
         <img src="${PAGE_URL}venmo-qr.png" alt="Venmo QR code" width="180" height="180" style="margin-top:8px"></p>

@@ -267,7 +267,12 @@
       <textarea id="message" name="message" placeholder="Questions? Comments? Mailing address?"></textarea>
       <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
 
-      <button type="submit" id="submit">Count me in ✨</button>
+      <!-- One tap: send the order, and (for Venmo) open Venmo with the payment filled in -->
+      <div id="orderBtns">
+        <button type="submit" class="btn venmo" data-pay="venmo">Order &amp; pay now with Venmo</button>
+        <button type="submit" class="btn later" data-pay="pickup">Order &amp; pay at pickup</button>
+      </div>
+      <button type="submit" id="askBtn" data-pay="none" hidden>Send my question ✨</button>
       <p class="error" id="error" role="alert"></p>
     </form>
 
@@ -276,16 +281,15 @@
       <h2 id="doneTitle">Yay, you're in!</h2>
       <div id="payBlock">
         <div class="total" id="doneTotal"></div>
-        <div id="payChoice">
-          <div id="payButtons">
-            <a class="btn venmo" id="venmoBtn" href="#" target="_blank" rel="noopener">Pay now with Venmo</a>
-            <button type="button" class="btn later" id="laterBtn">Pay on delivery</button>
-          </div>
-          <p class="note" id="paidNote" hidden>💙 <b>Thank you for paying!</b><br>We'll email you once it comes through.</p>
+        <div id="paidVenmo" hidden>
+          <p class="note">💙 <b>Thank you for paying with Venmo!</b><br>We'll email you once it comes through.</p>
           <img class="qr" src="venmo-qr.png" alt="Venmo QR code" onerror="this.remove()">
-          <p class="muted small" id="qrCaption">Or scan with your phone to pay</p>
+          <p class="muted small">Venmo didn't open? Scan this, or <a id="venmoAgain" href="#" target="_blank" rel="noopener">try again</a>.</p>
         </div>
-        <p class="note" id="laterNote" hidden>✅ <b>Got it!</b><br>You'll pay at pickup.</p>
+        <div id="paidLater" hidden>
+          <p class="note">✅ <b>Got it!</b><br>You'll pay at pickup.</p>
+          <p class="muted small">Changed your mind? <a id="venmoLater" href="#" target="_blank" rel="noopener">Pay now with Venmo</a></p>
+        </div>
       </div>
       <p class="muted" id="doneNote">A confirmation email is on its way.</p>
     </div>
@@ -353,6 +357,7 @@
   function updateQtyNote() {
     const q = qty();
     qtyNote.textContent = q === 0 ? "Just a question" : `$${q * CONFIG.PRICE}`;
+    show("orderBtns", q > 0); show("askBtn", q === 0);  // a question gets a plain Send button
     updateDiffuser();
   }
   // Phones: open the Venmo app straight to a payment to you with the amount filled in.
@@ -364,44 +369,55 @@
     }).toString().replace(/\+/g, "%20");
     return isPhone ? `venmo://paycharge?${p}` : `https://account.venmo.com/pay?${p}`;
   }
-  // After they pick: thank them (Venmo) or remind them to pay later (delivery).
-  // The Venmo QR stays visible after the Venmo button in case the app didn't open.
   const show = (id, on = true) => { document.getElementById(id).hidden = !on; };
-  document.getElementById("venmoBtn").addEventListener("click", () => {
-    setTimeout(() => { show("payButtons", false); show("paidNote"); show("qrCaption", false); }, 300);
-  });
-  document.getElementById("laterBtn").addEventListener("click", () => {
-    show("payChoice", false); show("laterNote");
-  });
 
   form.addEventListener("change", updateQtyNote);
   updateQtyNote();
 
+  // Enter in a text box shouldn't submit (it would pick the first button: Venmo)
+  form.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.target.tagName === "INPUT") e.preventDefault();
+  });
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     errorEl.textContent = "";
+    const pay = (e.submitter && e.submitter.dataset.pay) || "pickup";
     const data = new FormData(form);
     const name = data.get("name").trim(), email = data.get("email").trim(), phone = data.get("phone").trim();
     const q = qty(), message = data.get("message").trim();
     data.set("diffusers", updateDiffuser());
+    data.set("pay", q === 0 ? "" : pay);
 
     if (!name || !email || !phone) return errorEl.textContent = "Please add your name, email and phone.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return errorEl.textContent = "That email doesn't look quite right.";
     if (q === 0 && !message) return errorEl.textContent = "Add a message, or pick how many you'd like.";
 
-    const btn = document.getElementById("submit");
-    btn.disabled = true; btn.textContent = "Sending…";
+    const buttons = form.querySelectorAll("button[type=submit]");
+    buttons.forEach((b) => (b.disabled = true));
+    const label = e.submitter ? e.submitter.textContent : "";
+    if (e.submitter) e.submitter.textContent = "Sending…";
+
+    // Start sending. keepalive lets it finish even if the page goes to the Venmo app.
+    // (Apps Script doesn't return CORS headers we can read, so send and trust delivery.)
+    const sending = CONFIG.SHEET_URL
+      ? fetch(CONFIG.SHEET_URL, { method: "POST", mode: "no-cors", keepalive: true, body: new URLSearchParams(data) })
+      : Promise.resolve(console.warn("SHEET_URL not set - preview only, nothing was saved.", Object.fromEntries(data)));
+
+    // Open Venmo right away, inside the tap, so phones and pop-up blockers allow it
+    const total = q * CONFIG.PRICE;
+    if (pay === "venmo" && q > 0) {
+      if (isPhone) location.href = venmoLink(total);
+      else window.open(venmoLink(total), "_blank", "noopener");
+    }
+
     try {
-      if (CONFIG.SHEET_URL) {
-        // Apps Script doesn't return CORS headers we can read, so send and trust delivery.
-        await fetch(CONFIG.SHEET_URL, { method: "POST", mode: "no-cors", body: new URLSearchParams(data) });
-      } else {
-        console.warn("SHEET_URL not set - preview only, nothing was saved.", Object.fromEntries(data));
-      }
-      showDone(q, parseInt(data.get("diffusers"), 10));
+      await sending;
+      showDone(q, parseInt(data.get("diffusers"), 10), pay);
     } catch (err) {
       errorEl.textContent = "Couldn't send. Check your connection and try again.";
-      btn.disabled = false; btn.textContent = "Count me in ✨";
+      buttons.forEach((b) => (b.disabled = false));
+      if (e.submitter) e.submitter.textContent = label;
     }
   });
 
@@ -420,7 +436,7 @@
   addEventListener("resize", updateJump);
   updateJump();
 
-  function showDone(q, d) {
+  function showDone(q, d, pay) {
     form.hidden = true;
     if (q === 0) {
       document.getElementById("doneTitle").textContent = "Thanks for your message!";
@@ -429,9 +445,13 @@
     } else {
       const total = q * CONFIG.PRICE;
       document.getElementById("doneTotal").textContent = `${q} sparkly Alia${q > 1 ? "s" : ""}${diffText(q, d)} · $${total}`;
-      const venmoBtn = document.getElementById("venmoBtn");
-      venmoBtn.href = venmoLink(total);
-      if (isPhone) venmoBtn.removeAttribute("target");  // let the app link open the Venmo app
+      for (const id of ["venmoAgain", "venmoLater"]) {
+        const a = document.getElementById(id);
+        a.href = venmoLink(total);
+        if (isPhone) a.removeAttribute("target");  // let the app link open the Venmo app
+      }
+      show("paidVenmo", pay === "venmo");
+      show("paidLater", pay !== "venmo");
     }
     jumpDone = true; jump.classList.add("gone");
     const done = document.getElementById("done");
