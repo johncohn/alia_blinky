@@ -70,15 +70,9 @@
     background: #07040f; border: 1px solid var(--card-line);
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), 0 0 0 6px rgba(255, 211, 107, 0.06);
   }
-  .hero img { width: 100%; height: auto; display: block; }
-  .hero .placeholder {
-    min-height: 240px; display: grid; place-content: center; text-align: center;
-    color: var(--muted); font-family: var(--display); font-size: 1.05rem;
-  }
-  .hero .placeholder span { font-size: 3rem; display: block; margin-bottom: 6px; }
+  .hero video { width: 100%; height: auto; aspect-ratio: 1138 / 848; display: block; object-fit: cover; }
   @media (min-width: 900px) and (orientation: landscape) {
-    .hero img { max-height: 46vh; object-fit: contain; background: #07040f; }
-    .hero .placeholder { min-height: 34vh; }
+    .hero video { max-height: 46vh; object-fit: contain; background: #07040f; }
   }
 
   h1 {
@@ -152,6 +146,7 @@
   button:hover, .btn:hover { transform: translateY(-1px); }
   button:disabled { opacity: 0.6; cursor: wait; }
   .btn.venmo { background: #3d95ce; color: #fff; box-shadow: 0 8px 24px rgba(61, 149, 206, 0.35); }
+  .btn.later { background: transparent; color: var(--text, #fff); border: 1.5px solid var(--card-line); box-shadow: none; }
   .error { color: #ffb0b0; font-size: 0.9rem; margin: 10px 0 0; min-height: 1.2em; }
 
   .done { display: none; text-align: center; }
@@ -171,9 +166,8 @@
 <main class="page">
   <section>
     <div class="hero">
-      <!-- Drop your animation in as docs/alia.gif -->
-      <img src="alia.gif" alt="The sparkly Alia ornament lighting up" onerror="this.remove(); document.getElementById('heroPlaceholder').hidden = false;">
-      <div class="placeholder" id="heroPlaceholder" hidden><span>✨✈️✨</span>Animation coming soon</div>
+      <!-- docs/alia.mp4: short silent loop (muted + playsinline so phones autoplay it) -->
+      <video src="alia.mp4" poster="alia-poster.jpg" autoplay muted loop playsinline aria-label="The sparkly Alia ornament lighting up"></video>
     </div>
 
     <h1>Your own sparkly Alia</h1>
@@ -233,8 +227,12 @@
       <div id="payBlock">
         <div class="total" id="doneTotal"></div>
         <p class="muted">Pay now with Venmo, or pay at pickup.</p>
-        <a class="btn venmo" id="venmoBtn" href="#" target="_blank" rel="noopener">Pay with Venmo</a>
-        <img class="qr" src="venmo-qr.png" alt="Venmo QR code" onerror="this.remove()">
+        <div id="payChoice">
+          <a class="btn venmo" id="venmoBtn" href="#" target="_blank" rel="noopener">Pay now with Venmo</a>
+          <button type="button" class="btn later" id="laterBtn">Pay on delivery</button>
+          <img class="qr" src="venmo-qr.png" alt="Venmo QR code" onerror="this.remove()">
+        </div>
+        <p class="muted" id="laterNote" hidden>👍 No problem, pay when you get your Alia.</p>
       </div>
       <p class="muted" id="doneNote">Check your inbox for a confirmation email.</p>
     </div>
@@ -284,13 +282,19 @@
   form.addEventListener("change", updateQtyNote);
   updateQtyNote();
 
+  // Phones: open the Venmo app straight to a payment to you with the amount filled in.
+  // Laptops: open Venmo's website payment page, also pre-filled.
+  const isPhone = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   function venmoLink(amount) {
     const p = new URLSearchParams({
-      txn: "pay", audience: "private", recipients: CONFIG.VENMO_USER,
-      amount: String(amount), note: "Sparkly Alia",
-    });
-    return `https://venmo.com/?${p}`;
+      txn: "pay", recipients: CONFIG.VENMO_USER, amount: String(amount), note: "Sparkly Alia ✨",
+    }).toString().replace(/\+/g, "%20");
+    return isPhone ? `venmo://paycharge?${p}` : `https://account.venmo.com/pay?${p}`;
   }
+  document.getElementById("laterBtn").addEventListener("click", () => {
+    document.getElementById("payChoice").hidden = true;
+    document.getElementById("laterNote").hidden = false;
+  });
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -328,7 +332,9 @@
     } else {
       const total = q * CONFIG.PRICE;
       document.getElementById("doneTotal").textContent = `${q} sparkly Alia${q > 1 ? "s" : ""} · $${total}`;
-      document.getElementById("venmoBtn").href = venmoLink(total);
+      const venmoBtn = document.getElementById("venmoBtn");
+      venmoBtn.href = venmoLink(total);
+      if (isPhone) venmoBtn.removeAttribute("target");  // let the app link open the Venmo app
     }
     const done = document.getElementById("done");
     done.classList.add("show");

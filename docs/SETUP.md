@@ -43,9 +43,16 @@ If you change the script later, use **Deploy → Manage deployments → Edit →
 
 `VENMO_USER` is set in both `index.html` and the script. `docs/venmo-qr.png` is your Venmo QR code; the confirmation emails load it from the live site, so it only shows up in emails once GitHub Pages is on.
 
-## 4. The animation
+## 4. The video
 
-Save your GIF as **`docs/alia.gif`**. Until it exists, the page shows an "Animation coming soon" box. The box takes the GIF's own shape. Keep the GIF under about 3 MB so it loads quickly on phones.
+The page plays **`docs/alia.mp4`**, a short silent looping video, with **`docs/alia-poster.jpg`** shown while it loads. To swap in a new phone video (`.mov`), shrink it with:
+
+```
+ffmpeg -i NEW.mov -an -vf "scale=720:-2,format=yuv420p" -c:v libx264 -crf 27 -movflags +faststart docs/alia.mp4
+ffmpeg -ss 1 -i docs/alia.mp4 -frames:v 1 docs/alia-poster.jpg
+```
+
+If the new video isn't 1138×848, change the `aspect-ratio` on `.hero video` in `index.html` to match. Keep it under about 3 MB so it loads quickly on phones.
 
 ## 5. Turn on GitHub Pages
 

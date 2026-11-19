@@ -121,7 +121,8 @@ function send_(to, subject, htmlBody) {
 }
 
 function venmoLink_(amount) {
-  return 'https://venmo.com/?txn=pay&audience=private&recipients=' + encodeURIComponent(VENMO_USER) +
+  // Venmo's payment page with you as the recipient and the amount filled in
+  return 'https://account.venmo.com/pay?txn=pay&recipients=' + encodeURIComponent(VENMO_USER) +
          '&amount=' + amount + '&note=' + encodeURIComponent('Sparkly Alia');
 }
 
