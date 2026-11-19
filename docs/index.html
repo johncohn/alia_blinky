@@ -146,6 +146,16 @@
   .hp { position: absolute; left: -9999px; }
   [hidden] { display: none !important; }
 
+  .jump {
+    position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); z-index: 5;
+    transform: translateX(-50%); padding: 13px 26px; border-radius: 999px; white-space: nowrap;
+    font-family: var(--display); font-weight: 600; font-size: 1.1rem; text-decoration: none; color: #2a1600;
+    background: linear-gradient(90deg, var(--gold), #ffb36b); box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .jump.gone { opacity: 0; pointer-events: none; transform: translate(-50%, 20px); }
+  @media (min-width: 900px) and (orientation: landscape) { .jump { display: none; } }
+
   .diff { margin: 0 0 12px; padding: 12px 14px; border-radius: 14px; background: var(--input); border: 1px solid var(--card-line); }
   .diff .check { display: flex; gap: 10px; align-items: center; cursor: pointer; font-size: 0.98rem; }
   .diff .check input { width: 20px; height: 20px; accent-color: var(--gold); flex: none; }
@@ -217,7 +227,7 @@
     </div>
   </section>
 
-  <section class="card">
+  <section class="card" id="orderCard">
     <form id="order" novalidate>
       <h2>Get yours ✨</h2>
       <p class="sub">Pick up at Beta the week of <b>Dec 14</b>. Need it mailed? Add your address below.</p>
@@ -281,6 +291,9 @@
     </div>
   </section>
 </main>
+
+<!-- Phones: floating button down to the order form; hides once the form is on screen -->
+<a class="jump" id="jump" href="#orderCard">✨ Order yours ↓</a>
 
 <script>
   // ===== SETTINGS - edit these =====
@@ -392,6 +405,21 @@
     }
   });
 
+  // Floating "Order yours" button (phones): smooth-scroll to the form, hide while the form is visible
+  const jump = document.getElementById("jump"), orderCard = document.getElementById("orderCard");
+  let jumpDone = false;
+  jump.addEventListener("click", (e) => {
+    e.preventDefault();
+    orderCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  function updateJump() {
+    // Hide once the top of the form is in the upper 60% of the screen
+    jump.classList.toggle("gone", jumpDone || orderCard.getBoundingClientRect().top < innerHeight * 0.6);
+  }
+  addEventListener("scroll", updateJump, { passive: true });
+  addEventListener("resize", updateJump);
+  updateJump();
+
   function showDone(q, d) {
     form.hidden = true;
     if (q === 0) {
@@ -405,6 +433,7 @@
       venmoBtn.href = venmoLink(total);
       if (isPhone) venmoBtn.removeAttribute("target");  // let the app link open the Venmo app
     }
+    jumpDone = true; jump.classList.add("gone");
     const done = document.getElementById("done");
     done.classList.add("show");
     done.scrollIntoView({ behavior: "smooth", block: "center" });
