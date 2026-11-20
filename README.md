@@ -243,6 +243,7 @@ Pattern power draw:
 - **[SOLDER.md](SOLDER.md)** - Photo guide for soldering the microcontroller and gluing the diffuser covers
 - **[alia_mic_test/](alia_mic_test/alia_mic_test.ino)** - Microphone test sketch for the sound PCB (see [Microphone Test](#microphone-test-sound-board))
 - **[alia_clapper/](alia_clapper/alia_clapper.ino)** - Clap and button controlled firmware with sound-reactive patterns for the sound PCB (see [Clapper Firmware](#clapper-firmware-sound-board))
+- **[Sign-up page](https://johncohn.github.io/alia_blinky/)** and **[printable flyer](https://johncohn.github.io/alia_blinky/flyer.html)** ([PDF](docs/sparkly-alia-flyer.pdf)) - order a ready-made ornament; all proceeds go to Toys for Tots (setup notes in [docs/SETUP.md](docs/SETUP.md))
 - **[LICENSE](LICENSE)** - MIT License
 - **In-code comments** - Extensive documentation throughout
 

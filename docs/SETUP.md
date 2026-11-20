@@ -1,7 +1,24 @@
 # "Your own sparkly Alia" Sign-Up Page: Setup
 
 `docs/index.html` is a one-page site for the ornament, served by GitHub Pages at
-**https://johncohn.github.io/alia_blinky/**. `docs/qr_ornament_page.png` is a QR code for that address. **`docs/flyer.html`** (https://johncohn.github.io/alia_blinky/flyer.html) is a one-page printable flyer with a QR code to the sign-up page: open it and press ⌘P.
+**https://johncohn.github.io/alia_blinky/**. Buyers fill in their details, choose how many (and how many with a diffuser), and tap one button: **Order & pay now with Venmo** (opens Venmo with the recipient and amount filled in) or **Order & pay at pickup**. On phones, a floating "Order yours ↓" button points to the form until it's on screen.
+
+Other files:
+
+| File | What it is |
+|------|------------|
+| `flyer.html` | One-page printable flyer (https://johncohn.github.io/alia_blinky/flyer.html). Open it and press ⌘P. |
+| `sparkly-alia-flyer.pdf` | The same flyer as a ready-to-print PDF (US Letter) |
+| `qr-signup.png` | QR code to the sign-up page, with a full white margin so phones scan it easily (used on the flyer) |
+| `flyer-photo.jpg` | Still from the video, used on the flyer |
+| `fonts/fredoka-latin.woff2` | The Fredoka font, hosted here (see Notes) |
+
+To remake the PDF after editing the flyer:
+
+```
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --no-pdf-header-footer \
+  --print-to-pdf=docs/sparkly-alia-flyer.pdf "file://$PWD/docs/flyer.html"
+```
 
 ## Where sign-ups go
 
@@ -9,8 +26,8 @@ Every sign-up becomes a row in a **Google Sheet that you own**, through a small 
 
 | When | Who gets it | What's in it |
 |------|-------------|--------------|
-| Someone signs up | **The buyer** | Their order and total, pickup info, your contact details, a **Pay with Venmo** button with the amount filled in, your Venmo QR code, and "pay now or when your Alia is delivered" |
-| Someone signs up | **You** | Their name, email, phone, quantity and message |
+| Someone signs up | **The buyer** | Their order (including how many with a diffuser) and total, pickup info, your contact details, and the Toys for Tots match. Venmo payers get a thank-you; pay-at-pickup buyers get a **Pay with Venmo** button and QR code in case they'd like to pay early |
+| Someone signs up | **You** | Their name, email, phone, quantity, diffusers, how they're paying, and message |
 | You tick **Paid?** on their row | **The buyer** | "Payment received, thank you!", plus how much that means for Toys for Tots |
 
 The page itself stores nothing.
@@ -34,7 +51,8 @@ If you change the script later, use **Deploy → Manage deployments → Edit →
 
 ## 2. Day to day
 
-- New sign-ups appear as rows on the **Signups** tab. The **Diffusers** column (last) says how many of that order should have a diffuser.
+- New sign-ups appear as rows on the **Signups** tab. **Diffusers** says how many of that order should have a diffuser, and **Pays by** says "Venmo (now)" or "At pickup". (These columns are at the end so older sheets keep working; the script adds the headers itself.)
+- "Venmo (now)" means they were sent to Venmo, not that the money arrived. Check Venmo before ticking **Paid?**.
 - When someone's Venmo payment arrives, tick **Paid?** on their row. They get a payment confirmation, and the time it was sent appears in **Paid email sent**. It's only ever sent once per row.
 - If someone pays at pickup, tick **Paid?** then too, if you'd like them to get the email.
 - Gmail lets a script send about **100 emails a day** on a personal account. That's plenty here, but worth knowing.
@@ -45,11 +63,12 @@ If you change the script later, use **Deploy → Manage deployments → Edit →
 
 ## 4. The video
 
-The page plays **`docs/alia.mp4`** (made from a phone video, rotated so the planes point up), a short silent looping video, with **`docs/alia-poster.jpg`** shown while it loads. To swap in a new phone video (`.mov`), shrink it with:
+The page plays **`docs/alia.mp4`**, a short silent looping video of two ornaments (with and without diffusers), with **`docs/alia-poster.jpg`** shown while it loads. The "With diffuser" and "Without" labels sit on top of it. To swap in a new phone video (`.mov`), shrink it with the commands below. `transpose=2` rotates it a quarter turn; drop it if the video is already the right way up.
 
 ```
-ffmpeg -i NEW.mov -an -vf "scale=720:-2,format=yuv420p" -c:v libx264 -crf 27 -movflags +faststart docs/alia.mp4
+ffmpeg -i NEW.mov -an -vf "transpose=2,scale=960:-2,format=yuv420p" -c:v libx264 -crf 27 -movflags +faststart docs/alia.mp4
 ffmpeg -ss 1 -i docs/alia.mp4 -frames:v 1 docs/alia-poster.jpg
+ffmpeg -ss 1 -i NEW.mov -frames:v 1 -vf "transpose=2,scale=1600:-2,eq=saturation=1.35:contrast=1.06" docs/flyer-photo.jpg
 ```
 
 If the new video isn't 960×584, change the `aspect-ratio` on `.hero video` in `index.html` to match. Keep it under about 3 MB so it loads quickly on phones.
@@ -75,4 +94,6 @@ Delete the test row afterwards.
 
 - **Privacy:** buyers' details go only to your Google Sheet.
 - **Spam:** a hidden field catches simple bots.
+- **No outside fonts or scripts.** Safari's Advanced Privacy Protection (and some ad blockers) block Google Fonts, which left iPhones on a blank page with a "Reduce Protections" warning. The font is now served from `docs/fonts/`, so keep it that way.
+- **Changes take up to 10 minutes to show.** GitHub Pages lets browsers cache pages for 10 minutes. Press ⌘⇧R, or add `?v=2` to the address, to see the latest.
 - **The page always shows "Yay, you're in!" once a submission is sent.** Apps Script doesn't let the page read its reply, so if the sheet ever stops receiving rows, the page can't tell. Check the sheet after setting it up.
